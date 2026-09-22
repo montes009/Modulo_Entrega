@@ -15,8 +15,8 @@ description: >
 ## Abiertos (bloqueantes para funcionar)
 
 - [ ] Cargar el cliente de Supabase (JS, `supabase-js`) y cablear login → `EntregasEquipo.setEmpresa`.
-- [ ] Conectar el frontend (`entregas.js`) a las RPCs 0002 (crear/checklist/firmar/anular).
-- [ ] Crear el bucket privado `entregas-privado` + policies por `empresa_id`.
+- [ ] Conectar el frontend (`entregas.js`) a las RPCs 0002 (crear/checklist/firmar/anular)
+      y a la subida al bucket `entregas-privado` (path {empresa_id}/{entrega_id}/{uuid}).
 - [ ] Sembrar al menos una `empresas` + una fila en `usuarios_empresas` para el usuario real.
 - [ ] Implementar `nueva()`, `abrir()` y el guardado incremental del checklist en `entregas.js`.
 - [ ] Captura de firma en canvas (signature_pad o equivalente) + subida al bucket privado.

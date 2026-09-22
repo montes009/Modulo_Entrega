@@ -35,6 +35,13 @@ en `proyecto-cambio-bd`. Acá se lleva el historial de qué se endureció y qué
   Lección: SIEMPRE verificar con has_function_privilege tras un REVOKE — no avisa si no
   tuvo efecto. Aplicar el mismo patrón a cada RPC futura.
 
+- 2026-09-22 Bucket `entregas-privado` creado **privado** (public=false) con
+  file_size_limit 10 MB y allowed_mime_types (jpeg/png/webp/pdf). Policies sobre
+  `storage.objects` acotadas por `bucket_id` + `(storage.foldername(name))[1] =
+  get_empresa_id_actual()::text` (el primer segmento del path = empresa_id). Probado por
+  impersonación+rollback: subir a mi empresa = permitido; subir a path de OTRA empresa =
+  bloqueado por RLS. Lectura siempre por createSignedUrl (nunca público).
+
 ## Pendiente de seguridad
 
 - Implementar y revocar directo tras desplegar las RPCs (orden seguro, Manual 3.2).
