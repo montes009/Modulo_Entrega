@@ -58,13 +58,30 @@ Todas SECURITY DEFINER, escritura sensible ÚNICA vía. Validan empresa + estado
 | Checklist / fotos / cerrar / firmar | ✅ | ✅ | ✅ |
 | Anular (con motivo) | ✅ | ✅ | ❌ |
 
-Frontend: se oculta "Nueva entrega" y "Anular" según rol, pero la autorización real la
-hacen las RPCs (`crear_entrega_equipo` y `anular_entrega` validan `get_rol_actual()`).
+Frontend: se oculta "Nueva entrega", "Plantillas" y "Anular" según rol, pero la
+autorización real la hacen las RPCs (`crear_entrega_equipo`, `anular_entrega`,
+`guardar_plantilla*` validan `get_rol_actual()`).
+
+## Plantillas de checklist por tipo de equipo (0005)
+
+- Cabecera en `entregas_equipo_checklist_templates` (tipo_equipo, nombre, activo); ítems en
+  `entregas_equipo_checklist_template_items` (titulo, obligatorio, foto_obligatoria, orden).
+- RPCs (admin/supervisor): `guardar_plantilla`, `guardar_plantilla_item`, `eliminar_plantilla_item`.
+- `crear_entrega_equipo(..., p_tipo_equipo)` PRECARGA el checklist copiando los ítems de la
+  plantilla ACTIVA de ese tipo (columna `tipo_equipo` en `entregas_equipo`).
+- UI: módulo `plantillas.js` (botón "Plantillas"); "Nueva entrega" trae un selector de tipo.
+- Plantilla demo sembrada: `retroexcavadora` (5 ítems) para Alcon Ops.
+
+## Estado (en vivo)
+
+- Migraciones 0000–0005 aplicadas; PRs #3–#6 en `main`; Render en vivo
+  (modulo-operador.onrender.com). Probado en el navegador: login, badge, detalle, roles.
 
 ## Bugs reales encontrados y su causa raíz
 
-- (ninguno todavía — anotar aquí síntoma → causa → fix → cómo se verificó)
+- 2026-09-22 Login HTTP 500 al crear usuario por SQL → columnas de token NULL en
+  `auth.users`. Fix: setearlas a ''. Detalle en `proyecto-historial-sesiones`.
 
 ## Pendientes / deuda conocida
 
-- Ver `proyecto-pendientes`.
+- Ver `proyecto-pendientes` (datos del equipo en el acta, autoservicio de usuarios, etc.).
