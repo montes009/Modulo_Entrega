@@ -5,16 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- HTML de entrada: servir con Cache-Control: no-cache (ver CLAUDE.md > Deploy) -->
   <title>Entrega de Equipos</title>
-  <link rel="stylesheet" href="src/css/styles.css?v=1" />
+  <link rel="stylesheet" href="src/css/styles.css?v=2" />
 </head>
 <body>
   <header class="app-header">
     <h1>Entrega de Equipos</h1>
     <span id="empresa-actual" class="badge"></span>
+    <button type="button" data-action="logout" class="btn-logout">Salir</button>
   </header>
 
-  <!-- Listado + acciones. Todo por delegación: data-action + data-id (ver CLAUDE.md) -->
-  <main id="app" data-action-root>
+  <!-- Login (visible sin sesión) -->
+  <section id="auth" style="display:none">
+    <div class="login">
+      <h2>Ingresar</h2>
+      <label>Email <input id="login-email" type="email" autocomplete="username"></label>
+      <label>Contraseña <input id="login-pass" type="password" autocomplete="current-password"></label>
+      <button type="button" class="btn-primario" data-action="login">Entrar</button>
+    </div>
+  </section>
+
+  <!-- App (visible con sesión). Todo por delegación: data-action + data-id -->
+  <main id="app" data-action-root style="display:none">
     <section id="lista-entregas" aria-live="polite">
       <p class="vacio">Cargando…</p>
     </section>
@@ -24,19 +35,23 @@
     </button>
   </main>
 
-  <!-- Contenedor de modales in-app (nada de confirm()/alert() nativos) -->
+  <!-- Modales in-app (nada de confirm()/alert() nativos) -->
   <div id="modal-root"></div>
-  <!-- Contenedor de toasts -->
+  <!-- Toasts -->
   <div id="toast-root" aria-live="assertive"></div>
 
-  <!-- Config de Supabase. NO commitear claves reales aquí: usar variables de entorno
-       o un config.local.js ignorado por git. Este es el placeholder público. -->
-  <script src="src/js/config.js?v=1"></script>
-  <script src="src/js/util.js?v=1"></script>
+  <!-- supabase-js (UMD): expone window.supabase.createClient -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Módulos del proyecto (cache-busting ?v=, bumpear en el mismo commit que edita el JS) -->
+  <script src="src/js/config.js?v=2"></script>
+  <script src="src/js/util.js?v=2"></script>
+  <script src="src/js/rutas.js?v=1"></script>
   <script src="src/js/estados.js?v=1"></script>
   <script src="src/js/checklist.js?v=1"></script>
-  <script src="src/js/firma.js?v=1"></script>
-  <script src="src/js/entregas.js?v=1"></script>
-  <script src="src/js/app.js?v=1"></script>
+  <script src="src/js/firma.js?v=2"></script>
+  <script src="src/js/supa.js?v=1"></script>
+  <script src="src/js/entregas.js?v=2"></script>
+  <script src="src/js/app.js?v=2"></script>
 </body>
 </html>

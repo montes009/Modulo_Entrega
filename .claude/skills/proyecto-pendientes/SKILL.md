@@ -14,10 +14,11 @@ description: >
 
 ## Abiertos (bloqueantes para funcionar)
 
-- [ ] Cargar el cliente de Supabase (JS, `supabase-js`) y cablear login → `EntregasEquipo.setEmpresa`.
-- [ ] Conectar el frontend (`entregas.js`) a las RPCs 0002 (crear/checklist/firmar/anular)
-      y a la subida al bucket `entregas-privado` (path {empresa_id}/{entrega_id}/{uuid}).
-- [ ] Sembrar al menos una `empresas` + una fila en `usuarios_empresas` para el usuario real.
+- [ ] Sembrar al menos una `empresas` + una fila en `usuarios_empresas` para el usuario real
+      (crear el usuario en Auth primero; luego la fila de membresía con su rol).
+- [ ] Implementar la carga real de datos en `print/print_acta.html` (hoy solo pinta el id).
+- [ ] Probar el flujo end-to-end en el navegador real (crear → checklist → firmar → PDF)
+      con un usuario y empresa reales; el smoke test local no puede por falta de red al CDN.
 - [ ] Implementar `nueva()`, `abrir()` y el guardado incremental del checklist en `entregas.js`.
 - [ ] Captura de firma en canvas (signature_pad o equivalente) + subida al bucket privado.
 - [ ] Página de impresión: cargar el acta persistida y pintar cabecera/checklist/firmas/hash.
@@ -42,3 +43,8 @@ description: >
 - [x] Migración 0002: 6 RPCs SECURITY DEFINER (crear/checklist/foto/cerrar/firmar/anular) +
       get_rol_actual, aplicadas y probadas por impersonación+rollback (9/9 asserts ok).
       revoke public+anon / grant authenticated verificado en las 7 funciones.
+- [x] Migración 0003: bucket privado entregas-privado + policies por empresa (path segment).
+- [x] Frontend cableado: supa.js (auth+rpc+storage+selects), entregas.js (crear/checklist/
+      fotos/cerrar/firma-canvas/anular/imprimir), app.js (gating de auth + delegación
+      click/change), login + modales en index.html/util.js, firma en canvas. Smoke test:
+      login visible y módulos cargan aun si el CDN falla (init resiliente).

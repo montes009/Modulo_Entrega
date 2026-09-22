@@ -34,10 +34,43 @@
     });
   }
 
+  // Enlaza el dibujo a un <canvas> (pointer events). Devuelve un control con
+  // { estaVacio, limpiar, desmontar }. Solo navegador.
+  function bindCanvas(canvas) {
+    var ctx = canvas.getContext('2d');
+    var dibujando = false, vacio = true;
+    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#111';
+
+    function pos(ev) {
+      var r = canvas.getBoundingClientRect();
+      return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    }
+    function abajo(ev) { dibujando = true; var p = pos(ev); ctx.beginPath(); ctx.moveTo(p.x, p.y); ev.preventDefault(); }
+    function mover(ev) { if (!dibujando) return; var p = pos(ev); ctx.lineTo(p.x, p.y); ctx.stroke(); vacio = false; ev.preventDefault(); }
+    function arriba() { dibujando = false; }
+
+    canvas.addEventListener('pointerdown', abajo);
+    canvas.addEventListener('pointermove', mover);
+    canvas.addEventListener('pointerup', arriba);
+    canvas.addEventListener('pointerleave', arriba);
+
+    return {
+      estaVacio: function () { return vacio; },
+      limpiar: function () { ctx.clearRect(0, 0, canvas.width, canvas.height); vacio = true; },
+      desmontar: function () {
+        canvas.removeEventListener('pointerdown', abajo);
+        canvas.removeEventListener('pointermove', mover);
+        canvas.removeEventListener('pointerup', arriba);
+        canvas.removeEventListener('pointerleave', arriba);
+      }
+    };
+  }
+
   global.Firma = {
     validarPayloadFirma: validarPayloadFirma,
     firmaEsValida: firmaEsValida,
-    exportarPNG: exportarPNG
+    exportarPNG: exportarPNG,
+    bindCanvas: bindCanvas
   };
 
   if (typeof module !== 'undefined' && module.exports) {
