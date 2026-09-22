@@ -25,6 +25,10 @@ as $$
 $$;
 
 revoke execute on function public.get_empresa_id_actual() from public;
+-- Supabase concede EXECUTE a anon/authenticated por DEFAULT PRIVILEGES, no solo vía
+-- PUBLIC. Revocar de PUBLIC NO alcanza (Manual 3.3): hay que revocar de anon explícito.
+-- Verificado con has_function_privilege('anon', ...) → debe dar false.
+revoke execute on function public.get_empresa_id_actual() from anon;
 grant execute on function public.get_empresa_id_actual() to authenticated;
 
 -- ============================================================

@@ -14,11 +14,10 @@ description: >
 
 ## Abiertos (bloqueantes para funcionar)
 
-- [ ] Conectar Supabase: completar `src/js/config.js` (URL + anon key) y crear el proyecto.
-- [ ] Crear tabla `usuarios_empresas` (membresías) — la usa `get_empresa_id_actual()`.
 - [ ] Implementar las RPCs de `supabase/migrations/0002_*.example` (crear/cerrar/firmar/anular)
       y probarlas por impersonación + rollback antes de conectarlas al frontend.
-- [ ] Cargar el cliente de Supabase (JS) y cablear login → `EntregasEquipo.setEmpresa`.
+- [ ] Cargar el cliente de Supabase (JS, `supabase-js`) y cablear login → `EntregasEquipo.setEmpresa`.
+- [ ] Sembrar al menos una `empresas` + una fila en `usuarios_empresas` para el usuario de prueba.
 - [ ] Implementar `nueva()`, `abrir()` y el guardado incremental del checklist en `entregas.js`.
 - [ ] Captura de firma en canvas (signature_pad o equivalente) + subida al bucket privado.
 - [ ] Página de impresión: cargar el acta persistida y pintar cabecera/checklist/firmas/hash.
@@ -34,3 +33,9 @@ description: >
 
 - [x] Andamiaje inicial del repo según el Manual de Seguridad (estructura, CLAUDE.md,
       migración 0001, skills, tests de lógica pura).
+- [x] Proyecto Supabase `Modulo_Entrega` (tkekmpxwefjlkwegamfz) creado con RLS automático.
+- [x] Migraciones 0000 (empresas + usuarios_empresas) y 0001 (6 tablas + policies +
+      get_empresa_id_actual) aplicadas. 8 tablas con RLS + policy verificadas.
+- [x] Endurecido: `revoke execute ... from anon` sobre get_empresa_id_actual
+      (has_function_privilege('anon',...) = false). Ver proyecto-seguridad.
+- [x] `src/js/config.js` con URL + publishable key.
