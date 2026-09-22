@@ -12,13 +12,24 @@ description: >
 > Se mantiene viva desde el día 1 (Manual sec. 12). Anotar un pendiente aquí es parte
 > del "hecho" de cada tarea, no un paso opcional.
 
-## Abiertos (bloqueantes para funcionar)
+## Abiertos (mejoras, no bloqueantes)
 
-- [ ] Probar el flujo end-to-end en el navegador real (crear → checklist → firmar → PDF)
-      con usuario/empresa reales; el smoke test local no puede por falta de red al CDN.
-- [ ] Gestión de plantillas de checklist por tipo de equipo (hoy los ítems se agregan a mano).
+- [ ] Datos del equipo en el acta (marca/modelo/serie/horómetro): hoy solo hay `equipo_id`
+      (texto). Falta una tabla/RPC de equipos o campos extra en la entrega.
+- [ ] Autoservicio de usuarios: hoy se crean por SQL (ver riesgo del login 500). Idealmente
+      registro/invitación vía Auth Admin API o un panel de admin.
 - [ ] (Opcional) Enviar el PDF por correo/WhatsApp al cerrar → requeriría Edge Function
       (hoy el PDF se imprime bajo demanda desde la página de impresión).
+- [ ] Comprimir/redimensionar fotos en el cliente antes de subir (Manual 6): hoy se sube tal cual.
+
+## Datos de acceso / entorno (memoria operativa)
+
+- Proyecto Supabase: **Modulo_Entrega** (`tkekmpxwefjlkwegamfz`). Repo GitHub renombrado a
+  `montes009/Modulo_Entrega` (la URL vieja `montes009/modulo_operador` redirige).
+- Producción (Render): **modulo-operador.onrender.com** (estático desde `main`, Publish Dir `.`).
+- Usuarios de prueba (empresa **Alcon Ops**): `orlandosmg09@gmail.com` (admin) y
+  `operador@alcon.co` (operador). Contraseñas fijadas en sesión; rotar si se comparten.
+- Plantilla demo sembrada: tipo **retroexcavadora** (5 ítems, 1 con foto obligatoria).
 
 ## Riesgos conocidos
 
@@ -49,3 +60,9 @@ description: >
       observaciones, fotos y firmas por URL firmada, hash de integridad en el pie). Usa la
       sesión compartida por localStorage; RLS aplica. Smoke test sin errores de sintaxis.
 - [x] PR #4: badge con nombre de empresa; migración 0004 (crear entrega solo admin/supervisor).
+- [x] Plantillas de checklist por tipo de equipo (migración 0005 + plantillas.js): admin/
+      supervisor crean plantillas; al crear entrega de un tipo, el checklist se PRECARGA.
+      Probado por impersonación 5/5.
+- [x] Migraciones 0000–0005 aplicadas al proyecto; PRs #3–#6 mergeados a `main` (Render en vivo).
+- [x] Verificado en vivo end-to-end en el navegador (login admin/operador, badge, detalle,
+      permisos por rol). Falta solo probar el flujo completo hasta PDF con datos reales.

@@ -36,3 +36,23 @@ Bitácora cronológica de cambios puntuales. Los temas grandes viven en su propi
   '' en vez de NULL). Diagnóstico: se vio el 500 en edge_logs (query_logs), no en el
   cliente. LECCIÓN: preferir crear usuarios con la Auth Admin API / Dashboard; si se hace
   por SQL, setear esas columnas a '' en el mismo insert.
+- **Permisos por rol (0004/0005):** crear entrega y gestionar plantillas = solo
+  admin/supervisor; anular = admin/supervisor; operador hace checklist/fotos/cerrar/firmar.
+  Frontend oculta botones por rol, pero la autorización real la imponen las RPCs.
+- **Plantillas de checklist (0005):** nueva tabla `_template_items` + `crear_entrega_equipo`
+  con `p_tipo_equipo` que precarga el checklist desde la plantilla activa. Sembrada plantilla
+  demo `retroexcavadora` (5 ítems) para la empresa Alcon Ops.
+- **Merge del stack de 4 PRs (#3→#6):** se encadenaron por rebase (cada uno base=anterior)
+  y se mergearon con SQUASH. LECCIÓN: al hacer squash, los commits del padre cambian de SHA
+  en `main`, así que el hijo apilado queda en conflicto contra `main`. Fix: NO rebasar toda
+  la rama apilada (reaplica commits ya mergeados); crear rama fresca desde `origin/main` y
+  `git cherry-pick` SOLO el commit propio del hijo → aplica limpio porque `main` ya tiene el
+  contenido del padre. Alternativa a futuro: mergear con "merge commit" en vez de squash, o
+  mergear de abajo hacia arriba re-basando el hijo tras cada merge.
+- **"No se visualiza nada" (soporte):** el usuario entró como OPERADOR y vio la pantalla casi
+  vacía (sin Nueva entrega/Plantillas/Anular) + un acta vieja con checklist vacío. No era bug:
+  era el rol correcto. Se sembró la plantilla demo para que el valor fuera visible al entrar
+  como admin. LECCIÓN: al mostrar una feature, sembrar datos de ejemplo y aclarar el rol.
+- **Estado al cierre:** todo en `main`, Render en vivo (modulo-operador.onrender.com),
+  migraciones 0000–0005 aplicadas. Usuarios: admin `orlandosmg09@gmail.com`, operador
+  `operador@alcon.co` (empresa Alcon Ops).
