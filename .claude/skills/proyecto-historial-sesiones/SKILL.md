@@ -27,3 +27,12 @@ Bitácora cronológica de cambios puntuales. Los temas grandes viven en su propi
   (`npm run build` + Publish Directory `dist`); como ya no existe ese build, el deploy
   falla y Render sirve el último bueno (landing vieja). Fix: en Render, Build Command
   vacío + Publish Directory `.`, y mergear el frontend a `main`. Documentado en CLAUDE.md.
+- **Login 500 al crear usuario por SQL (GoTrue):** signInWithPassword devolvía HTTP 500
+  (no 400). Causa: al insertar en `auth.users` por SQL, las columnas de tokens quedan en
+  NULL y GoTrue (Go) revienta al leer NULL en un string ("converting NULL to string is
+  unsupported"). Fix: `update auth.users set confirmation_token='', recovery_token='',
+  email_change='', email_change_token_new='', email_change_token_current='',
+  phone_change='', phone_change_token='', reauthentication_token='' where ...` (todas a
+  '' en vez de NULL). Diagnóstico: se vio el 500 en edge_logs (query_logs), no en el
+  cliente. LECCIÓN: preferir crear usuarios con la Auth Admin API / Dashboard; si se hace
+  por SQL, setear esas columnas a '' en el mismo insert.
