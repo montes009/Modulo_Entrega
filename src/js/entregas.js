@@ -56,9 +56,19 @@
   }
 
   // --- Crear entrega ---
-  function nueva() {
+  async function nueva() {
+    // Ofrecer los tipos de equipo con plantilla activa: el checklist se precarga en el server.
+    var tpls = [];
+    try { tpls = await global.Supa.listarPlantillas(); } catch (e) { /* sin plantillas, sigue */ }
+    var tipos = tpls.filter(function (t) { return t.activo; })
+      .map(function (t) { return t.tipo_equipo; })
+      .filter(function (v, i, a) { return a.indexOf(v) === i; });
+    var opcionesTipo = '<option value="">— sin plantilla —</option>' +
+      tipos.map(function (t) { return '<option value="' + esc(t) + '">' + esc(t) + '</option>'; }).join('');
+
     Util.modal(
       '<h2>Nueva entrega</h2>' +
+      '<label>Tipo de equipo <select id="f-tipo">' + opcionesTipo + '</select></label>' +
       '<label>Equipo (ID) <input id="f-equipo" type="text"></label>' +
       '<label>Cliente <input id="f-cliente" type="text"></label>' +
       '<label>Cédula cliente <input id="f-cedula" type="text"></label>' +
@@ -78,7 +88,8 @@
       p_cliente_nombre: val('f-cliente'),
       p_recibido_por: val('f-recibe'),
       p_cliente_cedula: val('f-cedula') || null,
-      p_observaciones: val('f-obs') || null
+      p_observaciones: val('f-obs') || null,
+      p_tipo_equipo: val('f-tipo') || null
     });
     toast('Entrega creada', 'ok');
     await cargar();

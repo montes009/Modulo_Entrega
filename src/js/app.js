@@ -27,6 +27,13 @@
       case 'confirmar-anular': return E.confirmarAnular && E.confirmarAnular(id);
       case 'imprimir-acta': return E.imprimir && E.imprimir(id);
       case 'cerrar-modal': return Util.cerrarModal && Util.cerrarModal();
+      case 'gestionar-plantillas': return global.Plantillas && global.Plantillas.abrir();
+      case 'crear-plantilla': return global.Plantillas && global.Plantillas.crear();
+      case 'editar-plantilla-items': return global.Plantillas &&
+        global.Plantillas.abrirItems(id, el.getAttribute('data-tipo'), el.getAttribute('data-nombre'));
+      case 'agregar-plantilla-item': return global.Plantillas && global.Plantillas.agregarItem();
+      case 'eliminar-plantilla-item': return global.Plantillas && global.Plantillas.eliminarItem(id);
+      case 'volver-plantillas': return global.Plantillas && global.Plantillas.abrir();
       default: toast('Acción no reconocida: ' + accion, 'error');
     }
   }
@@ -92,12 +99,13 @@
       var nombre = membresia.empresa_nombre || 'Empresa';
       badge.textContent = nombre + (membresia.rol ? ' · ' + membresia.rol : '');
     }
-    // Crear entrega es solo admin/supervisor (el servidor lo hace cumplir; esto es UI).
+    // Crear entrega y gestionar plantillas: solo admin/supervisor (el servidor lo hace
+    // cumplir; esto es solo comodidad de UI).
+    var esGestor = membresia.rol === 'admin' || membresia.rol === 'supervisor';
     var btnNueva = document.querySelector('[data-action="nueva-entrega"]');
-    if (btnNueva) {
-      var puedeCrear = membresia.rol === 'admin' || membresia.rol === 'supervisor';
-      btnNueva.style.display = puedeCrear ? 'inline-block' : 'none';
-    }
+    if (btnNueva) btnNueva.style.display = esGestor ? 'inline-block' : 'none';
+    var btnTpl = document.querySelector('[data-action="gestionar-plantillas"]');
+    if (btnTpl) btnTpl.style.display = esGestor ? 'inline-block' : 'none';
     mostrarSesion(true);
     await E.cargar();
   }
