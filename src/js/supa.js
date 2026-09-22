@@ -96,6 +96,19 @@
     if (r.error) throw new Error(r.error.message);
     return r.data || [];
   }
+  async function listarPlantillas() {
+    var r = await client().from('entregas_equipo_checklist_templates')
+      .select('id,tipo_equipo,nombre,activo').order('tipo_equipo', { ascending: true });
+    if (r.error) throw new Error(r.error.message);
+    return r.data || [];
+  }
+  async function listarPlantillaItems(templateId) {
+    var r = await client().from('entregas_equipo_checklist_template_items')
+      .select('id,titulo,obligatorio,foto_obligatoria,orden')
+      .eq('template_id', templateId).order('orden', { ascending: true });
+    if (r.error) throw new Error(r.error.message);
+    return r.data || [];
+  }
 
   global.Supa = {
     client: client,
@@ -110,6 +123,8 @@
     listarEntregas: listarEntregas,
     detalleEntrega: detalleEntrega,
     listarChecklist: listarChecklist,
-    listarFirmas: listarFirmas
+    listarFirmas: listarFirmas,
+    listarPlantillas: listarPlantillas,
+    listarPlantillaItems: listarPlantillaItems
   };
 })(window);

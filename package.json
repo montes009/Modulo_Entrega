@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "node --test",
-    "check": "for f in config util rutas estados checklist firma supa entregas app; do node --check src/js/$f.js || exit 1; done"
+    "check": "for f in config util rutas estados checklist firma supa plantillas entregas app; do node --check src/js/$f.js || exit 1; done"
   },
   "license": "UNLICENSED"
 }
