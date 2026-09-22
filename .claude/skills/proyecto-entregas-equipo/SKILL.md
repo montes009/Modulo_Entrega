@@ -50,6 +50,17 @@ Todas SECURITY DEFINER, escritura sensible ÚNICA vía. Validan empresa + estado
 - `anular_entrega(entrega, motivo)` → void (solo admin/supervisor; motivo obligatorio).
 - Helper `get_rol_actual()`. Todas: revoke public+anon, grant authenticated (verificado).
 
+## Permisos por rol (0004)
+
+| Acción | admin | supervisor | operador |
+|---|---|---|---|
+| Crear entrega | ✅ | ✅ | ❌ (0004: rechazado por RPC) |
+| Checklist / fotos / cerrar / firmar | ✅ | ✅ | ✅ |
+| Anular (con motivo) | ✅ | ✅ | ❌ |
+
+Frontend: se oculta "Nueva entrega" y "Anular" según rol, pero la autorización real la
+hacen las RPCs (`crear_entrega_equipo` y `anular_entrega` validan `get_rol_actual()`).
+
 ## Bugs reales encontrados y su causa raíz
 
 - (ninguno todavía — anotar aquí síntoma → causa → fix → cómo se verificó)

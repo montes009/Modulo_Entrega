@@ -88,7 +88,16 @@
     }
     E.setSesion(membresia);
     var badge = document.getElementById('empresa-actual');
-    if (badge) badge.textContent = 'Empresa: ' + (membresia.rol || '');
+    if (badge) {
+      var nombre = membresia.empresa_nombre || 'Empresa';
+      badge.textContent = nombre + (membresia.rol ? ' · ' + membresia.rol : '');
+    }
+    // Crear entrega es solo admin/supervisor (el servidor lo hace cumplir; esto es UI).
+    var btnNueva = document.querySelector('[data-action="nueva-entrega"]');
+    if (btnNueva) {
+      var puedeCrear = membresia.rol === 'admin' || membresia.rol === 'supervisor';
+      btnNueva.style.display = puedeCrear ? 'inline-block' : 'none';
+    }
     mostrarSesion(true);
     await E.cargar();
   }
