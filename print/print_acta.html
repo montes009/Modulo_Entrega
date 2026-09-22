@@ -8,19 +8,31 @@
     Página de impresión dedicada. Se abre por URL directa con ?id=<acta>.
     Carga los datos YA PERSISTIDOS desde Supabase (nunca un estado en memoria) y usa el
     diálogo de impresión nativo del navegador ("Guardar como PDF").
+    Requiere sesión iniciada en la app (el token de supabase-js se comparte por
+    localStorage entre pestañas del mismo origen; la RLS aplica igual).
     OJO: esta página NO lleva ?v= propio → cualquier cambio requiere hard-refresh
     (Ctrl+Shift+R) la primera vez (ver CLAUDE.md > Deploy).
   -->
   <style>
     body { font-family: Georgia, "Times New Roman", serif; color: #111; margin: 32px; }
-    h1 { font-size: 1.4rem; }
-    .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin: 16px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-    th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; font-size: 0.9rem; }
-    .firmas { display: flex; gap: 40px; margin-top: 40px; }
+    h1 { font-size: 1.4rem; margin-bottom: 4px; }
+    h2 { font-size: 1rem; margin: 24px 0 6px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin: 12px 0; font-size: 0.9rem; }
+    .campos .k { color: #666; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; }
+    table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+    th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; font-size: 0.88rem; vertical-align: top; }
+    th { background: #f2f2f2; }
+    .fotos { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; }
+    .fotos figure { margin: 0; width: 150px; font-size: 0.7rem; color: #555; }
+    .fotos img { width: 150px; height: 110px; object-fit: cover; border: 1px solid #999; display: block; }
+    .firmas { display: flex; gap: 40px; margin-top: 28px; }
     .firma { flex: 1; text-align: center; }
-    .firma img { max-width: 220px; max-height: 90px; border-bottom: 1px solid #111; }
-    footer { margin-top: 40px; font-size: 0.72rem; color: #555; }
+    .firma img { max-width: 220px; max-height: 90px; border-bottom: 1px solid #111; display: block; margin: 0 auto 4px; }
+    .firma .meta { font-size: 0.75rem; color: #444; }
+    .estado { font-weight: bold; text-transform: uppercase; }
+    footer { margin-top: 36px; font-size: 0.72rem; color: #555; border-top: 1px solid #ccc; padding-top: 8px; }
+    #aviso { color: #a00; margin: 16px 0; }
+    .no-print button { padding: 8px 16px; cursor: pointer; }
     @media print { body { margin: 0; } .no-print { display: none; } }
   </style>
 </head>
@@ -30,32 +42,147 @@
   </div>
 
   <h1>Acta de Entrega de Equipo</h1>
+  <div id="aviso">Cargando…</div>
 
-  <!-- El PDF debe incluir SIEMPRE (Manual 8): datos del equipo, cliente y quien entrega,
-       checklist completo con observaciones, referencia a fotos, ambas firmas como imagen,
-       fecha/hora, identificador único del acta, y el hash de integridad en el pie. -->
-  <div class="campos" id="cabecera"><!-- se llena con los datos persistidos --></div>
+  <div id="contenido" style="display:none">
+    <div class="campos" id="cabecera"></div>
 
-  <table id="checklist">
-    <thead><tr><th>Ítem</th><th>Respuesta</th><th>Observación</th></tr></thead>
-    <tbody><!-- ítems del acta --></tbody>
-  </table>
+    <h2>Checklist</h2>
+    <table id="checklist">
+      <thead><tr><th style="width:40%">Ítem</th><th style="width:20%">Respuesta</th><th>Observación</th></tr></thead>
+      <tbody></tbody>
+    </table>
 
-  <div class="firmas">
-    <div class="firma"><img id="firma-entrega" alt="Firma de quien entrega" /><div>Entrega</div></div>
-    <div class="firma"><img id="firma-recibe" alt="Firma de quien recibe" /><div>Recibe</div></div>
+    <div id="fotos-wrap" style="display:none">
+      <h2>Fotos</h2>
+      <div class="fotos" id="fotos"></div>
+    </div>
+
+    <h2>Firmas</h2>
+    <div class="firmas" id="firmas"></div>
+
+    <footer>
+      Acta: <span id="acta-id"></span> · Estado: <span id="acta-estado"></span><br>
+      Hash de integridad: <span id="acta-hash">—</span>
+    </footer>
   </div>
 
-  <footer id="pie">Acta: <span id="acta-id"></span> · Hash: <span id="acta-hash"></span></footer>
-
+  <!-- supabase-js (UMD) + config público del proyecto -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../src/js/config.js"></script>
   <script>
-    // TODO: leer ?id=, cargar el acta persistida desde Supabase (columnas explícitas) y
-    //       pintar cabecera, checklist, firmas (URLs firmadas de corta duración) y el hash.
+    'use strict';
     (function () {
-      'use strict';
+      function esc(v) {
+        if (v == null) return '';
+        return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      }
+      function fecha(v) { try { return new Date(v).toLocaleString('es-CO'); } catch (e) { return v || ''; } }
+      function aviso(msg) { var a = document.getElementById('aviso'); a.style.display = 'block'; a.textContent = msg; }
+
       var id = new URLSearchParams(location.search).get('id') || '';
-      var el = document.getElementById('acta-id');
-      if (el) el.textContent = id;
+      var C = window.CONFIG || {};
+      if (!window.supabase || !C.SUPABASE_URL || !C.SUPABASE_ANON_KEY) {
+        aviso('No se pudo cargar Supabase. Revisa la conexión.'); return;
+      }
+      if (!id) { aviso('Falta el id del acta en la URL (?id=…).'); return; }
+
+      var client = window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
+      var bucket = C.STORAGE_BUCKET || 'entregas-privado';
+
+      async function firmada(path) {
+        if (!path) return null;
+        var r = await client.storage.from(bucket).createSignedUrl(path, 300);
+        return r && r.data ? r.data.signedUrl : null;
+      }
+
+      async function cargar() {
+        var s = await client.auth.getSession();
+        if (!s.data || !s.data.session) {
+          aviso('Inicia sesión en la app primero, luego reabre esta página.'); return;
+        }
+
+        var er = await client.from('entregas_equipo')
+          .select('id,equipo_id,cliente_nombre,cliente_cedula,recibido_por,estado,fecha_entrega,observaciones')
+          .eq('id', id).limit(1);
+        if (er.error) { aviso('Error: ' + er.error.message); return; }
+        var det = er.data && er.data[0];
+        if (!det) { aviso('Acta no encontrada (o sin permiso para verla).'); return; }
+
+        var ir = await client.from('entregas_equipo_checklist_items')
+          .select('id,titulo,respuesta,observacion').eq('entrega_id', id).order('created_at', { ascending: true });
+        var items = (ir.data) || [];
+
+        var fr = await client.from('entregas_equipo_firmas')
+          .select('rol,nombre,documento,storage_path,acta_hash,firmado_en').eq('entrega_id', id);
+        var firmas = (fr.data) || [];
+
+        var pr = await client.from('entregas_equipo_fotos')
+          .select('id,item_id,storage_path').eq('entrega_id', id).order('subida_en', { ascending: true });
+        var fotos = (pr.data) || [];
+
+        // Cabecera
+        var campos = [
+          ['Equipo', det.equipo_id], ['Cliente', det.cliente_nombre],
+          ['Cédula cliente', det.cliente_cedula || '—'], ['Recibe', det.recibido_por],
+          ['Fecha', fecha(det.fecha_entrega)], ['Estado', det.estado],
+          ['Observaciones', det.observaciones || '—']
+        ];
+        document.getElementById('cabecera').innerHTML = campos.map(function (c) {
+          return '<div><div class="k">' + esc(c[0]) + '</div>' + esc(c[1]) + '</div>';
+        }).join('');
+        document.getElementById('acta-id').textContent = det.id;
+        document.getElementById('acta-estado').textContent = det.estado;
+        var h = firmas.filter(function (f) { return f.acta_hash; })[0];
+        document.getElementById('acta-hash').textContent = h ? h.acta_hash : '—';
+
+        // Checklist
+        document.querySelector('#checklist tbody').innerHTML = items.length
+          ? items.map(function (it) {
+              return '<tr><td>' + esc(it.titulo) + '</td><td>' + esc(it.respuesta || '—') +
+                '</td><td>' + esc(it.observacion || '') + '</td></tr>';
+            }).join('')
+          : '<tr><td colspan="3">Sin ítems.</td></tr>';
+
+        // Fotos (URLs firmadas)
+        if (fotos.length) {
+          document.getElementById('fotos-wrap').style.display = 'block';
+          var cont = document.getElementById('fotos');
+          for (var i = 0; i < fotos.length; i++) {
+            var url = await firmada(fotos[i].storage_path);
+            var fig = document.createElement('figure');
+            fig.innerHTML = '<img alt="foto" src="' + esc(url || '') + '"><figcaption>' +
+              esc(fotos[i].storage_path.split('/').pop()) + '</figcaption>';
+            cont.appendChild(fig);
+          }
+        }
+
+        // Firmas (imágenes por URL firmada)
+        var cf = document.getElementById('firmas');
+        var roles = [['entrega', 'Entrega'], ['recibe', 'Recibe']];
+        for (var j = 0; j < roles.length; j++) {
+          var f = firmas.filter(function (x) { return x.rol === roles[j][0]; })[0];
+          var div = document.createElement('div');
+          div.className = 'firma';
+          if (f) {
+            var furl = await firmada(f.storage_path);
+            div.innerHTML = '<img alt="firma" src="' + esc(furl || '') + '">' +
+              '<div>' + esc(roles[j][1]) + '</div>' +
+              '<div class="meta">' + esc(f.nombre) + (f.documento ? ' · ' + esc(f.documento) : '') +
+              '<br>' + esc(fecha(f.firmado_en)) + '</div>';
+          } else {
+            div.innerHTML = '<div style="border-bottom:1px solid #111;height:90px"></div>' +
+              '<div>' + esc(roles[j][1]) + '</div><div class="meta">Sin firmar</div>';
+          }
+          cf.appendChild(div);
+        }
+
+        document.getElementById('aviso').style.display = 'none';
+        document.getElementById('contenido').style.display = 'block';
+      }
+
+      cargar().catch(function (e) { aviso('Error: ' + (e && e.message ? e.message : e)); });
     })();
   </script>
 </body>
