@@ -117,8 +117,23 @@ Ninguna de las dos sola es suficiente:
 ## Deploy
 
 - Rama principal: **`main`**. Trabajar en ramas de feature y mergear a `main`.
-- Hosting: **Static Site** con auto-deploy desde `main`, con `Cache-Control: no-cache`
+- Hosting: **Static Site (Render)** con auto-deploy desde `main`, `Cache-Control: no-cache`
   en el HTML de entrada.
+- **⚠️ Sitio ESTÁTICO SIN build.** El sitio se sirve desde la **raíz** del repo
+  (`index.html` en la raíz), NO hay paso de build ni carpeta `dist`. Config de Render:
+
+  | Campo | Valor |
+  |---|---|
+  | Build Command | *(vacío)* — o `npm ci` si algún día hace falta |
+  | Publish Directory | **`.`** (la raíz), **NO `dist`** |
+  | Root Directory | *(vacío)* |
+  | Branch | `main` |
+
+  Ojo (bug real 2026-09-22): el sitio migró de Astro (build → `dist`) a estático puro,
+  pero Render quedó con la config vieja (`npm run build` + `dist`). Como ya no existe
+  `npm run build`, el deploy fallaba y Render seguía sirviendo el ÚLTIMO deploy bueno
+  (la landing vieja). Si "no se ve el cambio", revisar PRIMERO Publish Directory=`.` y
+  que Build Command no invoque un build inexistente.
 - Cache-busting `?v=` en cada `<script>` (ver convenciones).
 - Las páginas de impresión (`print/`) se abren por URL directa y NO llevan `?v=` propio:
   cualquier cambio en ellas requiere avisar hard-refresh (Ctrl+Shift+R) la primera vez.
