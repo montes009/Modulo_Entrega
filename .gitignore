@@ -1,9 +1,21 @@
-# build & deps
+# Dependencias
 node_modules/
-dist/
-.astro/
 
-# env / logs
+# Variables de entorno / credenciales (NUNCA commitear)
 .env
 .env.*
-npm-debug.log*
+*.local
+
+# Supabase (claves y estado local)
+supabase/.temp/
+supabase/.branches/
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Salidas de test / cobertura
+coverage/

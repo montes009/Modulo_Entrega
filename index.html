@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- HTML de entrada: servir con Cache-Control: no-cache (ver CLAUDE.md > Deploy) -->
+  <title>Entrega de Equipos</title>
+  <link rel="stylesheet" href="src/css/styles.css?v=1" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Entrega de Equipos</h1>
+    <span id="empresa-actual" class="badge"></span>
+  </header>
+
+  <!-- Listado + acciones. Todo por delegación: data-action + data-id (ver CLAUDE.md) -->
+  <main id="app" data-action-root>
+    <section id="lista-entregas" aria-live="polite">
+      <p class="vacio">Cargando…</p>
+    </section>
+
+    <button type="button" data-action="nueva-entrega" class="btn-primario">
+      Nueva entrega
+    </button>
+  </main>
+
+  <!-- Contenedor de modales in-app (nada de confirm()/alert() nativos) -->
+  <div id="modal-root"></div>
+  <!-- Contenedor de toasts -->
+  <div id="toast-root" aria-live="assertive"></div>
+
+  <!-- Config de Supabase. NO commitear claves reales aquí: usar variables de entorno
+       o un config.local.js ignorado por git. Este es el placeholder público. -->
+  <script src="src/js/config.js?v=1"></script>
+  <script src="src/js/util.js?v=1"></script>
+  <script src="src/js/estados.js?v=1"></script>
+  <script src="src/js/checklist.js?v=1"></script>
+  <script src="src/js/firma.js?v=1"></script>
+  <script src="src/js/entregas.js?v=1"></script>
+  <script src="src/js/app.js?v=1"></script>
+</body>
+</html>

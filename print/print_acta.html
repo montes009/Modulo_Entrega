@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acta de Entrega</title>
+  <!--
+    Página de impresión dedicada. Se abre por URL directa con ?id=<acta>.
+    Carga los datos YA PERSISTIDOS desde Supabase (nunca un estado en memoria) y usa el
+    diálogo de impresión nativo del navegador ("Guardar como PDF").
+    OJO: esta página NO lleva ?v= propio → cualquier cambio requiere hard-refresh
+    (Ctrl+Shift+R) la primera vez (ver CLAUDE.md > Deploy).
+  -->
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; color: #111; margin: 32px; }
+    h1 { font-size: 1.4rem; }
+    .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; font-size: 0.9rem; }
+    .firmas { display: flex; gap: 40px; margin-top: 40px; }
+    .firma { flex: 1; text-align: center; }
+    .firma img { max-width: 220px; max-height: 90px; border-bottom: 1px solid #111; }
+    footer { margin-top: 40px; font-size: 0.72rem; color: #555; }
+    @media print { body { margin: 0; } .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom:16px">
+    <button type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+  </div>
+
+  <h1>Acta de Entrega de Equipo</h1>
+
+  <!-- El PDF debe incluir SIEMPRE (Manual 8): datos del equipo, cliente y quien entrega,
+       checklist completo con observaciones, referencia a fotos, ambas firmas como imagen,
+       fecha/hora, identificador único del acta, y el hash de integridad en el pie. -->
+  <div class="campos" id="cabecera"><!-- se llena con los datos persistidos --></div>
+
+  <table id="checklist">
+    <thead><tr><th>Ítem</th><th>Respuesta</th><th>Observación</th></tr></thead>
+    <tbody><!-- ítems del acta --></tbody>
+  </table>
+
+  <div class="firmas">
+    <div class="firma"><img id="firma-entrega" alt="Firma de quien entrega" /><div>Entrega</div></div>
+    <div class="firma"><img id="firma-recibe" alt="Firma de quien recibe" /><div>Recibe</div></div>
+  </div>
+
+  <footer id="pie">Acta: <span id="acta-id"></span> · Hash: <span id="acta-hash"></span></footer>
+
+  <script>
+    // TODO: leer ?id=, cargar el acta persistida desde Supabase (columnas explícitas) y
+    //       pintar cabecera, checklist, firmas (URLs firmadas de corta duración) y el hash.
+    (function () {
+      'use strict';
+      var id = new URLSearchParams(location.search).get('id') || '';
+      var el = document.getElementById('acta-id');
+      if (el) el.textContent = id;
+    })();
+  </script>
+</body>
+</html>
