@@ -1,15 +1,12 @@
 {
-  "name": "alcon-ops-landing",
-  "type": "module",
+  "name": "modulo-operador-entregas",
   "version": "0.1.0",
   "private": true,
+  "description": "Módulo de Entrega de Equipos — checklist + firma digital + PDF del acta (JS vanilla + Supabase)",
+  "type": "commonjs",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "test": "node --test",
+    "check": "node --check src/js/estados.js && node --check src/js/checklist.js && node --check src/js/firma.js && node --check src/js/util.js && node --check src/js/entregas.js && node --check src/js/app.js"
   },
-  "dependencies": {
-    "astro": "^4.16.18"
-  }
+  "license": "UNLICENSED"
 }

@@ -1,40 +1,40 @@
-# Alcon Ops — Landing
+# modulo_operador — Entrega de Equipos
 
-Página web de presentación / ventas de **Alcon Ops** (sistema de gestión de
-alquiler de maquinaria). Hecha con [Astro](https://astro.build). Es **independiente
-del app**: vive en esta carpeta, no toca `index.html` ni la PWA de producción.
+Módulo para registrar la **entrega de equipos/maquinaria** a un cliente: checklist
+digital configurable, fotos de evidencia, **firma electrónica** de quien entrega y quien
+recibe, e impresión del **acta en PDF**. Multi-tenant (aislado por empresa) desde el
+día 1.
 
-## Desarrollo
+Stack: **JS vanilla (sin build) + Supabase (Postgres + Auth + Storage)**. Frontend
+estático desplegable en cualquier Static Site con auto-deploy desde `main`.
 
-```bash
-cd landing
-npm install
-npm run dev      # http://localhost:4321
-```
-
-## Build
-
-```bash
-npm run build    # genera landing/dist (estático)
-npm run preview  # sirve el build localmente
-```
-
-## Deploy en Render (Static Site)
-
-Crear un **nuevo** Static Site en Render apuntando a este repo:
-
-| Campo | Valor |
-|---|---|
-| Root Directory | `landing` |
-| Build Command | `npm install && npm run build` |
-| Publish Directory | `landing/dist` |
-| Branch | la que se publique (p. ej. `main`) |
-
-> Es un servicio **aparte** del app (`OPS-ALCON-ADMI`). No comparte deploy ni
-> caché con alconops.com. El dominio (subdominio propio o raíz) se decide aparte.
+> Levantado siguiendo el *Manual de Seguridad y Estructuración de Proyecto* basado en la
+> arquitectura de producción de ALCON OPS. Las reglas durables están en
+> [`CLAUDE.md`](./CLAUDE.md) y en `.claude/skills/`.
 
 ## Estructura
 
-- `src/pages/index.astro` — la página (hero, funciones, qué soluciona, roles, CTA).
-- `src/components/FlowDemo.astro` — demo interactiva del ciclo de un equipo.
-- `src/styles/global.css` — variables de marca (navy + rojo) y utilidades.
+```
+index.html                     HTML de entrada (servir con Cache-Control: no-cache)
+src/js/                        módulos IIFE: config, util, estados, checklist, firma, entregas, app
+src/css/styles.css             estilos
+print/print_acta.html          página de impresión del acta (abrir por URL directa)
+supabase/migrations/           0001 esquema + RLS · 0002 plantilla de RPCs SECURITY DEFINER
+tests/                         node:test cargando los .js reales del frontend
+.claude/skills/                memoria por tema (empezar por proyecto-pendientes)
+```
+
+## Comandos
+
+```bash
+npm run check   # node --check: prueba SINTAXIS de los módulos
+npm test        # node:test: lógica pura (checklist, estados, firma)
+```
+
+No hay build step: para ver la app, servir la raíz por HTTP (ej. `python3 -m http.server`)
+y completar `src/js/config.js` con las credenciales públicas de Supabase.
+
+## Estado
+
+Andamiaje inicial. Ver pendientes en
+[`.claude/skills/proyecto-pendientes/SKILL.md`](./.claude/skills/proyecto-pendientes/SKILL.md).

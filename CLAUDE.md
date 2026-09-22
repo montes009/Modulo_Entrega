@@ -1,92 +1,138 @@
-# Alcon Ops — Landing
+# CLAUDE.md
 
-Sitio **Astro estático** (landing de presentación de Alcon Ops, software de gestión
-de alquiler de maquinaria). Vive en la **raíz** de este repo `montes009/modulo_operador`.
-Rama principal: `main`.
+Reglas durables del repo **modulo_operador** — **Módulo de Entrega de Equipos**
+(checklist digital + firma electrónica + impresión PDF del acta + fotos del equipo).
+Stack: **JS vanilla (sin build) + Supabase (Postgres + Auth + Storage)**.
 
-> Origen: el contenido se migró desde la carpeta `landing/` del repo `OPS-ALCON-ADMI`.
-> El repo `modulo_operador` tenía una versión vieja de prueba que se borró por completo.
+> Este repo se levantó desde cero siguiendo el *Manual de Seguridad y Estructuración
+> de Proyecto* basado en la arquitectura de producción de **ALCON OPS**. Las reglas de
+> abajo NO son teóricas: nacieron de fallas reales ya corregidas en ese sistema.
 
-## Stack
+## Qué es el sistema
 
-- **Astro 4** (`astro build`), sin frameworks de UI. Salida estática en `dist/`.
-- Una sola página: `src/pages/index.astro`.
-- Componente de demo interactiva: `src/components/FlowDemo.astro` (vanilla JS, sin deps).
-- Estilos: `src/styles/global.css` (variables CSS de tema) + `<style>` scopeado por componente.
-- Fuentes: Inter + Space Grotesk (Google Fonts).
+App para registrar la **entrega de equipos/maquinaria** a un cliente: se llena un
+checklist configurable por tipo de equipo, se adjuntan fotos, firman quien entrega y
+quien recibe, y se genera un **acta en PDF** trazable. Multi-tenant (aislado por
+empresa) desde el día 1. Frontend estático + Supabase como backend.
 
-## Comandos
+## Arquitectura: módulos independientes (IIFE + global)
 
-```bash
-npm install
-npm run dev       # desarrollo (astro dev)
-npm run build     # genera dist/
-npm run preview   # sirve dist/ por HTTP (NO abrir dist/index.html con file://, ver abajo)
+Cada módulo de dominio (Entregas, Checklist, Firma...) vive en su propio archivo,
+envuelto en un IIFE que expone SOLO lo necesario a `window`:
+
+```js
+(function (global) {
+  'use strict';
+  // ... estado y funciones privadas ...
+  global.EntregasEquipo = { abrir, guardar, imprimir };
+})(window);
 ```
 
-## Deploy en Render (Static Site)
+- Exponer explícitamente lo que otro módulo necesita; el consumidor valida con
+  `typeof` antes de usar. Preferir exponer cada función donde se define (un bloque de
+  exposición al final es frágil: un `ReferenceError` aborta todo el bloque).
+- `let`/`const` top-level **NO** son propiedades de `window` (solo `var` y
+  `function` top-level lo son). Para compartir estado, exponer un puente explícito.
+- **Acciones vía `data-action="..." data-id="..."`** + un único listener delegado por
+  documento (`click → closest('[data-action]') → switch`), no decenas de `onclick`.
 
-| Campo | Valor |
-|---|---|
-| Type | **Static Site** |
-| Repo | `montes009/modulo_operador` |
-| Branch | `main` |
-| Root Directory | *(vacío)* |
-| Build Command | `npm install && npm run build` |
-| Publish Directory | `dist` |
+## Convenciones de JS (siempre aplican)
 
-- URL en producción: `modulo-operador.onrender.com`.
-- En `astro.config.mjs` **NO** se define `site` a propósito: así las URLs son relativas
-  y el sitio corre en el dominio que asigne Render (antes apuntaba a `alconops.com`
-  y eso tumbaba la app). No volver a fijar `site` salvo que se use dominio propio.
+- `let`/`const` top-level NO son propiedades de `window`.
+- **Render perezoso por pestaña:** al marcar algo `dirty`, revisar TODAS las pestañas
+  que pintan esos mismos datos, no solo la actual.
+- **Re-pintar el modal de detalle**, no solo la lista, tras cualquier acción disparada
+  desde ese modal (aprobar, firmar, cambiar estado).
+- **Nada de `confirm()`/`alert()` nativos** — todo por modal in-app + toast.
+- **`esc()`** para TODA interpolación de texto libre dentro de `innerHTML` (una sola
+  convención de nombre en todo el repo, para auditar XSS con grep sin falsos negativos).
+- Fallos silenciosos en `'use strict'`: envolver handlers en `try/catch` que muestre el
+  mensaje exacto en un toast.
+- **Cache-busting `?v=` en cada `<script>`**, bumpeado en el MISMO commit que edita el JS.
+  Si el cambio agrega markup al HTML de entrada, avisar hard-refresh la primera vez.
 
-## ⚠️ Gotchas importantes
+## Modelo único de estados del acta de entrega
 
-1. **No abrir `dist/index.html` con `file://`.** Astro enlaza el CSS con ruta absoluta
-   (`/_astro/...`), que solo resuelve servido desde la raíz web. Por `file://` se ve sin
-   estilos (todo gigante/roto). Para previsualizar local usar `npm run preview` o un
-   `python3 -m http.server` dentro de `dist/`.
-2. **CSS scopeado vs. JS.** El `<style>` de cada componente Astro se escopa con
-   `[data-astro-cid-...]`. Los elementos que `FlowDemo.astro` inyecta por JS (innerHTML)
-   **no** reciben ese atributo, así que las reglas scopeadas no los alcanzan. Para esos
-   íconos el tamaño va **inline** (`width`/`height` en la etiqueta `<svg>`), no por clase.
-3. **`html{scroll-behavior:smooth}`** (en `global.css`) hace que CUALQUIER scroll
-   programático de la ventana se anime suavemente. Importa al testear: un `window.scrollTo`
-   se ve como un "salto" gradual de cientos de px aunque la página no tenga bug. Para
-   aislar comportamiento real, en pruebas poner `scrollBehavior='auto'` y dejar asentar.
-4. **La demo NO debe mover el scroll de la página.** `FlowDemo.astro` se autoreproduce y
-   avanza de paso cada ~4.2s. NO usar `element.scrollIntoView()` para resaltar el paso
-   activo: arrastra la ventana entera hacia la demo mientras el usuario lee. En su lugar
-   se desplaza solo el contenedor `.demo-steps` ajustando su `scrollTop`/`scrollLeft`
-   (vertical en desktop, horizontal en móvil). Mantener ese patrón.
+Una sola fuente de verdad del vocabulario de estados: constante en JS + `CHECK` en la
+BD, sincronizados siempre. Nunca dos listas que puedan divergir.
 
-## Sistema de íconos (plata / "pro", NO emojis)
+| Estado | Significado | Quién lo pone |
+|---|---|---|
+| `borrador` | Acta creada, checklist sin terminar | Quien inicia la entrega |
+| `en_proceso` | Checklist completo, pendiente de firma(s) | Sistema, al cerrar el checklist |
+| `firmada` | Ambas firmas registradas — acta **INMUTABLE** | RPC al recibir la 2ª firma |
+| `anulada` | Acta invalidada (se rehace) — nunca se borra | Rol autorizado, con motivo obligatorio |
 
-Decisión de diseño: **nada de emojis a color** en el contenido; se ven como caricatura.
-Todos los íconos son **SVG de línea monocromáticos** pintados con un degradado plata.
+> Un acta `firmada` es un registro cerrado: nunca se edita en el lugar. Se **anula**
+> (con motivo, auditado) y se crea una nueva.
 
-- El degradado se define **una sola vez** en `src/pages/index.astro`, justo tras `<body>`:
-  `<linearGradient id="silver">` (de `#f6f8fb` a `#7c8597`). Cualquier SVG lo usa con
-  `stroke="url(#silver)"`.
-- Los paths viven en objetos `const ic = {...}` (en `index.astro`) y `const dic = {...}`
-  (en `FlowDemo.astro`). Para añadir un ícono: agregar el/los `<path>` al objeto y
-  referenciarlo por su clave.
-- Patrón de uso: `<svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)"
-  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.clave}>`.
-- **Placas metálicas**: los íconos de funciones/roles/tarjetas van sobre un fondo
-  `linear-gradient(160deg,#283142,#141a26)` con borde claro e `inset` highlight.
-- **Sobre fondos claros** (las "pantallas" blancas de la demo) se usa
-  `stroke="currentColor"` para que el ícono herede el color del contexto, no plata.
+## Seguridad server-side: patrón RPC SECURITY DEFINER
 
-Zonas ya convertidas: módulos (funciones), roles, bullets de equipo, tarjetas "Tan
-fácil…", chips, fila de confianza, y toda la demo "Flujo en vivo" (lista de pasos,
-badge de rol, candado de URL, íconos internos de las pantallas).
+Toda operación sensible (crear entrega, cerrar checklist, registrar firma, anular) va por
+una **RPC `SECURITY DEFINER`** que valida en el servidor — nunca confiando en el frontend.
+La RPC SIEMPRE valida:
 
-Pendiente menor (intencional): los 2 toasts del hero (`ha-float` 🔔/✅) siguen con emoji
-por ser "notificaciones tipo captura"; convertirlos solo si se pide.
+- **Empresa dueña del registro:** pertenece a la misma empresa del usuario autenticado;
+  nunca confiar en un `empresa_id` que mande el cliente.
+- **Rol autorizado** para la acción (aprobar/anular/firmar).
+- **Estado válido** para la transición (no re-firmar un acta ya cerrada sin flujo auditado).
+- **Campos obligatorios:** checklist completo antes de generar PDF; firma no vacía.
 
-## Convenciones
+Reglas duras de Postgres (verificadas en auditorías reales):
 
-- Idioma del contenido y de la comunicación: **español**.
-- Mantener el estilo del código existente (densidad de comentarios, nombres, CSS inline-ish).
-- `gitignore` está en `.gitignore` (antes era `gitignore.txt`, mal nombrado).
+- **`REVOKE ... FROM anon` NO alcanza.** Postgres concede `EXECUTE` a `PUBLIC` por
+  defecto. Patrón correcto: `REVOKE EXECUTE ON FUNCTION x FROM PUBLIC;` +
+  `GRANT EXECUTE ON FUNCTION x TO authenticated;`. Verificar con
+  `has_function_privilege('anon', p.oid, 'EXECUTE')` — el REVOKE no avisa si no tuvo efecto.
+- **Columnas sensibles:** ocultar con `REVOKE SELECT (col)` NO basta si hay grant de
+  tabla completa. Patrón: `REVOKE SELECT ON tabla FROM authenticated;` + `GRANT SELECT
+  (todas menos la sensible)`. **Trampa:** rompe cualquier `select('*')` — cambiarlos a
+  columnas explícitas ANTES de aplicar el REVOKE.
+- **Orden de despliegue seguro:** (a) crear RPC → (b) probarla por impersonación+rollback
+  → (c) desplegar el JS que la usa PRIMERO → (d) recién después `REVOKE` del INSERT/UPDATE
+  directo. Un cliente con caché vieja verá "permission denied" en vez de corromper datos.
+- **Prueba estándar:** impersonación + `ROLLBACK` dentro de una transacción (ver
+  `.claude/skills/proyecto-cambio-bd`).
+
+## Almacenamiento (fotos, firmas, PDFs)
+
+- **Bucket privado**, nunca público. Acceso por `createSignedUrl` de corta duración.
+- Path SIEMPRE con `empresa_id`: `{empresa_id}/{entrega_id}/{uuid}.jpg` — permite que la
+  policy valide sin JOIN. Guardar `storage_path`, **nunca** una URL absoluta (expiran).
+- Validar MIME y tamaño en cliente; comprimir imágenes antes de subir.
+- Firma: trazo en `<canvas>` → PNG → mismo bucket privado + hash del acta al firmar.
+
+## Multi-tenant, doble defensa obligatoria
+
+Ninguna de las dos sola es suficiente:
+
+1. **RLS en BD (principal):** toda tabla de negocio con `empresa_id` y policy que filtra
+   por una función `SECURITY DEFINER` tipo `get_empresa_id_actual()` — nunca un subselect
+   directo contra membresías (recursión de RLS). Un UPDATE bloqueado por RLS afecta 0 filas
+   en silencio: si "no pasa nada", sospechar de las policies antes que del JS.
+2. **Limpieza de estado en cliente (secundaria):** logout limpia TODOS los arrays de datos
+   de empresa; además, todo render filtra por `empresa_id` en el punto de pintado (última
+   línea de defensa contra fuga entre empresas).
+
+## Deploy
+
+- Rama principal: **`main`**. Trabajar en ramas de feature y mergear a `main`.
+- Hosting: **Static Site** con auto-deploy desde `main`, con `Cache-Control: no-cache`
+  en el HTML de entrada.
+- Cache-busting `?v=` en cada `<script>` (ver convenciones).
+- Las páginas de impresión (`print/`) se abren por URL directa y NO llevan `?v=` propio:
+  cualquier cambio en ellas requiere avisar hard-refresh (Ctrl+Shift+R) la primera vez.
+
+## Índice de skills
+
+- `proyecto-ingeniero-feature` — construir algo nuevo: qué leer antes, RPC vs escritura directa, tests, deploy.
+- `proyecto-ingeniero-soporte` — atender un bug: síntoma → evidencia → hipótesis → reporte honesto.
+- `proyecto-cambio-bd` — plantilla de RPC, impersonación+rollback, migraciones, orden de despliegue seguro.
+- `proyecto-modelo-datos` — mapa de tablas: quién escribe cada una, aislamiento por empresa, qué es legacy.
+- `proyecto-entregas-equipo` — historial del módulo: checklist, firma, fotos, PDF — bugs reales y causa raíz.
+- `proyecto-seguridad` — historial de endurecimiento: qué se protegió, por qué, qué falta.
+- `proyecto-pendientes` — lista única de pendientes abiertos y riesgos conocidos (punto de partida de cada sesión).
+- `proyecto-historial-sesiones` — bitácora cronológica de fixes puntuales sin tema único.
+
+> **Disciplina:** actualizar memoria/skills es parte del "hecho" de una tarea, no un paso
+> opcional. Un bug corregido sin dejar la lección escrita tiende a repetirse.
