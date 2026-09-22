@@ -14,10 +14,10 @@ description: >
 
 ## Abiertos (bloqueantes para funcionar)
 
-- [ ] Implementar las RPCs de `supabase/migrations/0002_*.example` (crear/cerrar/firmar/anular)
-      y probarlas por impersonación + rollback antes de conectarlas al frontend.
 - [ ] Cargar el cliente de Supabase (JS, `supabase-js`) y cablear login → `EntregasEquipo.setEmpresa`.
-- [ ] Sembrar al menos una `empresas` + una fila en `usuarios_empresas` para el usuario de prueba.
+- [ ] Conectar el frontend (`entregas.js`) a las RPCs 0002 (crear/checklist/firmar/anular).
+- [ ] Crear el bucket privado `entregas-privado` + policies por `empresa_id`.
+- [ ] Sembrar al menos una `empresas` + una fila en `usuarios_empresas` para el usuario real.
 - [ ] Implementar `nueva()`, `abrir()` y el guardado incremental del checklist en `entregas.js`.
 - [ ] Captura de firma en canvas (signature_pad o equivalente) + subida al bucket privado.
 - [ ] Página de impresión: cargar el acta persistida y pintar cabecera/checklist/firmas/hash.
@@ -39,3 +39,6 @@ description: >
 - [x] Endurecido: `revoke execute ... from anon` sobre get_empresa_id_actual
       (has_function_privilege('anon',...) = false). Ver proyecto-seguridad.
 - [x] `src/js/config.js` con URL + publishable key.
+- [x] Migración 0002: 6 RPCs SECURITY DEFINER (crear/checklist/foto/cerrar/firmar/anular) +
+      get_rol_actual, aplicadas y probadas por impersonación+rollback (9/9 asserts ok).
+      revoke public+anon / grant authenticated verificado en las 7 funciones.
