@@ -91,3 +91,93 @@ main { padding: 20px; max-width: 900px; margin: 0 auto; }
 }
 .toast-error { border-left-color: var(--err); }
 .toast-ok { border-left-color: var(--ok); }
+
+/* Header logout */
+.btn-logout {
+  margin-left: auto;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+/* Login */
+.login {
+  max-width: 360px;
+  margin: 48px auto;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 24px;
+}
+.login label, .modal label {
+  display: block;
+  margin: 10px 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.login input, .modal input, .modal textarea, .modal select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  background: #0f1420;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: var(--texto);
+  font: inherit;
+}
+
+/* Modal */
+#modal-root { display: none; }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 900;
+}
+.modal {
+  position: fixed;
+  z-index: 901;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+.modal h2 { margin-top: 0; }
+.modal-acciones {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.modal-acciones button {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.modal-acciones .btn-primario { background: var(--acento); border-color: var(--acento); }
+
+.checklist { list-style: none; padding: 0; }
+.checklist li { padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.agregar-item { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.agregar-item input[type="text"] { flex: 1; min-width: 160px; }
+
+.canvas-firma {
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  touch-action: none;
+  margin: 8px 0;
+}

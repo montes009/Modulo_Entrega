@@ -24,9 +24,23 @@ en `proyecto-cambio-bd`. Acá se lleva el historial de qué se endureció y qué
 
 ## Endurecido hasta ahora
 
-- 2026-09-22 RLS activada en las 6 tablas de negocio desde el primer CREATE TABLE.
-  Policies de SELECT filtradas por `get_empresa_id_actual()`. Escritura NO concedida
-  directa (irá por RPC).
+- 2026-09-22 RLS activada en las 6 tablas de negocio + `empresas` + `usuarios_empresas`
+  (8 en total) desde el primer CREATE TABLE. Policies de SELECT filtradas por
+  `get_empresa_id_actual()`. Escritura NO concedida directa (irá por RPC).
+- 2026-09-22 **Trampa del Manual 3.3 confirmada en producción:** tras
+  `revoke execute ... from public` sobre `get_empresa_id_actual()`, `anon` SEGUÍA con
+  EXECUTE = true (Supabase concede EXECUTE a anon/authenticated por DEFAULT PRIVILEGES,
+  no solo vía PUBLIC). Fix: `revoke execute ... from anon` explícito. Verificado:
+  `has_function_privilege('anon', 'public.get_empresa_id_actual()', 'EXECUTE')` = false.
+  Lección: SIEMPRE verificar con has_function_privilege tras un REVOKE — no avisa si no
+  tuvo efecto. Aplicar el mismo patrón a cada RPC futura.
+
+- 2026-09-22 Bucket `entregas-privado` creado **privado** (public=false) con
+  file_size_limit 10 MB y allowed_mime_types (jpeg/png/webp/pdf). Policies sobre
+  `storage.objects` acotadas por `bucket_id` + `(storage.foldername(name))[1] =
+  get_empresa_id_actual()::text` (el primer segmento del path = empresa_id). Probado por
+  impersonación+rollback: subir a mi empresa = permitido; subir a path de OTRA empresa =
+  bloqueado por RLS. Lectura siempre por createSignedUrl (nunca público).
 
 ## Pendiente de seguridad
 

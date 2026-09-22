@@ -38,5 +38,26 @@
     };
   }
 
-  global.Util = { esc: esc, toast: toast, guard: guard };
+  // Modal in-app (nunca confirm()/alert() nativos). `innerHtml` lo construye el llamador,
+  // que DEBE haber escapado con esc() cualquier texto libre interpolado.
+  function modal(innerHtml) {
+    var root = document.getElementById('modal-root');
+    if (!root) return null;
+    root.innerHTML =
+      '<div class="modal-backdrop" data-action="cerrar-modal"></div>' +
+      '<div class="modal" role="dialog" aria-modal="true">' + innerHtml + '</div>';
+    root.style.display = 'block';
+    return root.querySelector('.modal');
+  }
+
+  function cerrarModal() {
+    var root = document.getElementById('modal-root');
+    if (!root) return;
+    root.innerHTML = '';
+    root.style.display = 'none';
+  }
+
+  global.Util = {
+    esc: esc, toast: toast, guard: guard, modal: modal, cerrarModal: cerrarModal
+  };
 })(window);

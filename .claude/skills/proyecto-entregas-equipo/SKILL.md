@@ -37,6 +37,19 @@ Escritura sensible SOLO por RPC SECURITY DEFINER (ver `proyecto-cambio-bd`).
 - 2026-09-22 PDF vía página HTML de impresión (cliente), no Edge Function — no hay
   requisito de envío automático por correo/WhatsApp (Manual 8). Revisar si eso cambia.
 
+## RPCs implementadas (0002, aplicadas a Supabase)
+
+Todas SECURITY DEFINER, escritura sensible ÚNICA vía. Validan empresa + estado + campos:
+- `crear_entrega_equipo(equipo, cliente, recibido_por, cedula?, obs?)` → uuid (borrador).
+- `guardar_checklist_item(entrega, item?, titulo, respuesta?, obs?, oblig?, foto_oblig?)` → uuid
+  (upsert; solo en borrador).
+- `registrar_foto(entrega, storage_path, item?)` → uuid (borrador/en_proceso).
+- `cerrar_checklist(entrega)` → void (borrador→en_proceso; valida obligatorios + foto_obligatoria).
+- `registrar_firma(entrega, rol, nombre, storage_path, acta_hash, doc?)` → text; 2ª firma →
+  firmada en la misma transacción. `unique(entrega_id, rol)` impide doble firma del rol.
+- `anular_entrega(entrega, motivo)` → void (solo admin/supervisor; motivo obligatorio).
+- Helper `get_rol_actual()`. Todas: revoke public+anon, grant authenticated (verificado).
+
 ## Bugs reales encontrados y su causa raíz
 
 - (ninguno todavía — anotar aquí síntoma → causa → fix → cómo se verificó)
