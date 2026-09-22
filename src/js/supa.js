@@ -59,10 +59,13 @@
 
   // --- Selects (columnas explícitas) ---
   async function empresaDelUsuario() {
+    // Embeber el nombre de la empresa vía la FK usuarios_empresas.empresa_id → empresas.id.
     var r = await client().from('usuarios_empresas')
-      .select('empresa_id,rol,activo').eq('activo', true).limit(1);
+      .select('empresa_id,rol,activo,empresas(nombre)').eq('activo', true).limit(1);
     if (r.error) throw new Error(r.error.message);
-    return (r.data && r.data[0]) || null;
+    var row = (r.data && r.data[0]) || null;
+    if (row && row.empresas) { row.empresa_nombre = row.empresas.nombre; }
+    return row;
   }
   async function listarEntregas() {
     var r = await client().from('entregas_equipo')

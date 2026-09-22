@@ -88,7 +88,10 @@
     }
     E.setSesion(membresia);
     var badge = document.getElementById('empresa-actual');
-    if (badge) badge.textContent = 'Empresa: ' + (membresia.rol || '');
+    if (badge) {
+      var nombre = membresia.empresa_nombre || 'Empresa';
+      badge.textContent = nombre + (membresia.rol ? ' · ' + membresia.rol : '');
+    }
     mostrarSesion(true);
     await E.cargar();
   }
