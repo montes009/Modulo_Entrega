@@ -17,10 +17,12 @@ description: >
   aplicadas en Supabase `Modulo_Entrega`. Guard `guard-ops.py` activo. Cache `?v=3`.
 - **Riesgo #1:** TODO se probó con un Supabase simulado (el sandbox bloquea CDNs). **Falta la primera prueba
   con login real y datos reales** (RLS, Storage, subida de adjuntos, import de un chat verdadero).
-- **Antes de la prueba real:** crear/resetear la contraseña de uno de los 2 usuarios de `auth.users`;
-  hard-refresh (Ctrl+Shift+R) tras el primer despliegue en Render.
+- **Acceso:** el login del coordinador ya existe (creado 2026-09-29) y es el único autorizado por RLS
+  (`upbq_coordinadores`, `sql/005`). La cuenta `operador@…` de la app vieja quedó sin acceso (no borrada).
+  Hard-refresh (Ctrl+Shift+R) tras cada despliegue con markup nuevo.
 - **Siguiente paso:** (1) prueba real y corrección de lo que salga; (2) **Caja menor** en cuanto el usuario
   entregue el formato — no inventar el flujo.
+- **Estado de `main`:** `sql/005` y estos docs están en la rama `ccr-…`; llevar a `main` cuando el usuario lo autorice.
 - **Deuda menor:** añadir festivos 2029 antes de fin de 2028; bucket viejo `entregas-privado` sin usar.
 
 ## Decisiones ya cerradas

@@ -28,16 +28,21 @@ directa desde el cliente está bien; solo login. Dejar la puerta abierta a endur
 - Fechas de negocio: columnas `date` reales cuando se pueda; el cálculo de "hoy"/días hábiles
   vive en JS con ancla `America/Bogota`.
 
-## RLS simple (patrón por tabla)
+## RLS: solo coordinadores (patrón por tabla, vigente desde `sql/005`)
 
 ```sql
-alter table upbq_<tabla> enable row level security;
-create policy upbq_<tabla>_auth on upbq_<tabla>
-  for all to authenticated using (true) with check (true);
+alter table public.upbq_<tabla> enable row level security;
+create policy upbq_<tabla>_coord on public.upbq_<tabla> for all to authenticated
+  using (exists (select 1 from public.upbq_coordinadores c where c.user_id = (select auth.uid())))
+  with check (exists (select 1 from public.upbq_coordinadores c where c.user_id = (select auth.uid())));
 ```
 
-Un solo usuario autenticado ve/escribe todo. No hace falta función `SECURITY DEFINER` ni
-filtro por empresa en esta fase.
+**NO** usar `using (true)` en tablas nuevas: eso abre la tabla a cualquier cuenta autenticada del mismo
+Supabase (existe otra cuenta de la app vieja). Sin `SECURITY DEFINER`: `upbq_coordinadores` solo deja a cada
+usuario ver su propia fila y no tiene políticas de escritura (se cambia únicamente por migración).
+Para Storage, misma condición dentro de la política de `storage.objects` junto al `bucket_id`.
+Verificar tras aplicar: en `execute_sql`, `begin; set local role authenticated; select set_config('request.jwt.claims',
+'{"sub":"<uuid>","role":"authenticated"}', true); select count(*) ...; rollback;` con un uid autorizado y otro no.
 
 ## Storage (imágenes/PDFs de negociaciones)
 
@@ -58,7 +63,7 @@ sensible o una transición que deba validarse server-side). Hasta entonces, no.
 
 ## Estado y procedimiento real (hecho)
 
-- Migraciones en `sql/000`–`004` (ver tabla en `CLAUDE.md`). Siguiente número libre: **005**. Se escribe el
+- Migraciones en `sql/000`–`004` (ver tabla en `CLAUDE.md`). Siguiente número libre: **006**. Se escribe el
   archivo en `sql/` y se aplica con el MCP de Supabase (`apply_migration`, mismo contenido) sobre
   `tkekmpxwefjlkwegamfz`; se verifica con SQL de solo lectura (RLS, políticas, buckets).
 - **Vistas:** crear con `with (security_invoker = true)` para que respeten la RLS; `revoke ... from anon`

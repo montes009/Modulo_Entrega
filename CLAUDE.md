@@ -114,6 +114,7 @@ se aplica en Supabase con el mismo contenido del archivo):
 | `002_upbq_festivos.sql` | `upbq_festivos` (Colombia 2026-2028; **añadir 2029 antes de fin de 2028**) |
 | `003_upbq_negociaciones.sql` | `upbq_negociaciones` (UNIQUE cliente), `upbq_negociacion_mensajes` (hash único por hilo), bucket privado `upbq-negociaciones` |
 | `004_upbq_negociaciones_resumen.sql` | Vista `upbq_negociaciones_resumen` (`security_invoker`) |
+| `005_upbq_solo_coordinador.sql` | `upbq_coordinadores` + políticas `*_coord` en todas las tablas y en Storage (reemplazan `*_auth`) |
 
 Pendiente de crear: `upbq_caja_*` (esqueleto, cuando llegue el formato). Estados con `CHECK` que
 espejan `js/constantes.js`. Sobras del módulo viejo que **no** se tocaron: bucket `entregas-privado`
@@ -128,7 +129,10 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
 ## Seguridad (deliberadamente mínima por ahora)
 
 - **Solo login** (Supabase Auth), un único usuario coordinador. Sin roles, sin multi-empresa.
-- RLS simple: tablas `upbq_*` accesibles solo por usuario autenticado. Escritura directa
+- RLS: tablas `upbq_*` accesibles **solo por usuarios listados en `upbq_coordinadores`** (migración
+  `sql/005`), no por cualquier autenticado: en el mismo Supabase existe otra cuenta (`operador@…`, de la app
+  vieja) que ya no tiene acceso. Cambiar de coordinador = `insert/delete` en `upbq_coordinadores` vía
+  migración (esa tabla no es escribible desde el cliente). Escritura directa
   desde el cliente permitida en esta fase — **sin RPCs `SECURITY DEFINER`** salvo que algo
   lo exija de verdad. No sobre-diseñar; dejar la puerta abierta a endurecer después.
 - **La bitácora de negociaciones NO conecta con nada externo**: sin WhatsApp API, sin
