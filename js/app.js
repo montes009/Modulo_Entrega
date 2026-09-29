@@ -20,13 +20,21 @@
     mostrar(!!data.session);
     if (data.session) irA(tab);
   }
+  let entrando = false; // evita inicios de sesión simultáneos (Enter mantenido, doble clic)
   async function login() {
+    if (entrando) return;
     const email = document.getElementById('lg-email').value.trim();
     const password = document.getElementById('lg-pass').value;
-    const { error } = await U.sb.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    mostrar(true);
-    irA('pan');
+    if (!email || !password) throw new Error('Escribe tu correo y tu contraseña');
+    const btn = document.querySelector('[data-action="login"]');
+    entrando = true; btn.disabled = true; btn.textContent = 'Entrando…';
+    try {
+      const { error } = await U.sb.auth.signInWithPassword({ email, password });
+      if (error) throw new Error(error.message === 'Invalid login credentials' ? 'Correo o contraseña incorrectos' : error.message);
+      document.getElementById('lg-pass').value = '';
+      mostrar(true);
+      await irA('pan');
+    } finally { entrando = false; btn.disabled = false; btn.textContent = 'Entrar'; }
   }
 
   // Un único listener delegado: click → closest('[data-action]') → switch.
@@ -51,6 +59,6 @@
       }
     });
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'lg-pass') document.querySelector('[data-action="login"]').click(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.repeat && e.target.id === 'lg-pass') document.querySelector('[data-action="login"]').click(); });
   document.addEventListener('DOMContentLoaded', () => U.seguro(iniciar));
 })(window);

@@ -142,7 +142,7 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
 ## Pruebas y lecciones aprendidas
 
 - **Pruebas en el repo (`tests/`)**: `node tests/test_parser.js` (parser de importación) y
-  `python3 tests/test_guard.py` (hook de protección). Correrlas antes de tocar el parser o el hook.
+  `python3 tests/test_guard.py` (hook de protección) y `node tests/smoke_login.js` (login; requiere Playwright). Correrlas antes de tocar el parser o el hook.
 - **El sandbox de Claude Code web bloquea CDNs** (jsDelivr/cdnjs): no se puede probar contra Supabase real ni
   cargar `supabase-js`. Método usado: Playwright con `page.route('**/supabase-js@2')` devolviendo un
   **stub funcional** de Supabase (insert/upsert/únicos/Storage en memoria). Ojo: eso valida la lógica de
@@ -154,7 +154,11 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
 - **Falsos positivos del guard** (`guard-ops.py`): detecta por texto; un `sed`, un mensaje de commit o un
   nombre de archivo que mencione el nombre del repo protegido se bloquea. Usar Write/Edit o reformular; no
   esquivar el hook. Si el guard se bloquea a sí mismo, escribir el archivo nuevo con Write.
-- Cache-busting actual: scripts y CSS en `?v=3`. Al agregar markup, avisar hard-refresh (Ctrl+Shift+R).
+- **`hidden` vs `display`**: un `display:grid/flex` en un id/clase ANULA el atributo `hidden` (bug real: el login se
+  quedaba a pantalla completa tras entrar). Regla global `[hidden]{display:none!important}` al inicio del CSS; no quitarla.
+  Toda acción de red disparable por teclado/clic (login) lleva bandera anti-doble-envío y se ignora `e.repeat`.
+  Los logs de Supabase (`query_logs`, fuente `edge_logs`) muestran ráfagas de `grant_type=password`: síntoma de UI que no reacciona.
+- Cache-busting actual: scripts y CSS en `?v=3` (`app.js` y `app.css` en `?v=4`). Al agregar markup, avisar hard-refresh (Ctrl+Shift+R).
 
 ## Deploy
 
