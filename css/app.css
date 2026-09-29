@@ -65,3 +65,43 @@ fieldset{border:1px solid var(--line);border-radius:10px;margin:10px 0;padding:6
 .chk{display:flex;gap:6px;align-items:center;margin:4px 0;color:var(--fg)}.chk input{width:auto;margin:0}
 .previa{background:var(--bg);border-radius:10px;padding:6px 10px;margin:10px 0}.code{background:var(--bg);padding:8px;border-radius:8px;overflow:auto;font-size:12px}
 @media (max-width:600px){.bub{max-width:92%}}
+/* Máquinas · tarjetas, mapa de días y selector visual de período (estilo módulo de cortes) */
+.modal-box{max-width:720px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin:8px 0}
+.mcard{--acc:var(--mut);background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.mcard:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.14)}
+.mcard.alquilada{--acc:var(--pri)}.mcard.reservada{--acc:var(--warn)}.mcard.vencida{--acc:var(--bad)}.mcard.libre{--acc:var(--ok)}.mcard.fin{--acc:var(--mut)}
+.mc-top{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.mc-id{font-size:18px;font-weight:800;color:var(--acc);line-height:1}.mc-tipo{font-size:13px;color:var(--mut);margin-top:4px;font-weight:600}
+.mc-body{padding:0 14px 12px;border-top:1px solid var(--line);flex:1;display:flex;flex-direction:column;gap:6px}
+.mc-body>*:first-child{margin-top:10px}
+.mc-cli{font-weight:700}.mc-ref{color:var(--pri);font-size:10px;font-weight:700;margin-left:4px}
+.mc-dates{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--mut);padding-top:6px;border-top:1px solid var(--line)}.mc-dates b{color:var(--fg)}
+.mc-libre{color:var(--ok);font-weight:700;padding:14px 0}.mc-sig{font-size:11px;color:var(--mut)}.mc-alerta{font-size:11px;color:var(--bad);font-weight:700}
+.mc-foot{padding:8px 14px;border-top:1px solid var(--line);background:var(--bg);display:flex;gap:6px;flex-wrap:wrap}
+.days-badge{align-self:flex-start;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px}
+.days-ok{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}.days-warn{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}
+.days-urgent{background:rgba(234,88,12,.18);color:#ea580c}.days-expired{background:color-mix(in srgb,var(--bad) 20%,transparent);color:var(--bad)}
+.badge.est-alquilada{background:var(--pri);color:#fff}.badge.est-reservada{background:var(--warn);color:#fff}.badge.est-vencida{background:var(--bad);color:#fff}.badge.est-libre{background:var(--ok);color:#fff}
+.dstrip{display:flex;flex-wrap:wrap;gap:3px;min-height:22px}.dmas{color:var(--mut);align-self:center}
+.cd{width:32px;height:28px;border:1px solid transparent;border-radius:4px;font-size:11px;background:transparent;color:var(--mut);cursor:pointer;padding:0;font-family:inherit}
+.dc{display:inline-block;min-width:34px;text-align:center;font-size:11px;font-weight:700;border-radius:4px;padding:3px 5px;color:#fff;font-family:inherit}
+.dc-w{background:rgba(34,197,94,.8)}.dc-f{background:rgba(14,165,233,.9)}.dc-n{background:rgba(245,158,11,.9)}.dc-x{background:rgba(239,68,68,.75)}
+.dc-hoy{outline:2px solid var(--fg);outline-offset:1px}
+.leyenda span{margin-right:12px;white-space:nowrap}.leyenda i.dc{min-width:12px;height:12px;padding:0;vertical-align:middle;margin-right:4px;display:inline-block}
+.kpis-top{margin:8px 0 12px}.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-pri{color:var(--pri)}.v-bad{color:var(--bad)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pf .quick,.quick{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0}.lbl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.pillx,.pillm{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:6px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.pillx.on{background:rgba(239,68,68,.15);border-color:var(--bad);color:var(--bad)}.pillm.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.fechas,.info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.fechas>div,.info>div{background:var(--bg);border-radius:8px;padding:8px}
+.fechas small,.info small{display:block;color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.6px}.fechas b,.info b{font-size:15px}
+.fechas .fin{border:1px solid rgba(34,197,94,.4)}.fechas .fin b{color:var(--ok)}
+.cal-modo{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:10px 0 4px}
+.cal{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0}.cmes-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);text-align:center;margin-bottom:4px}
+.cgrid{display:grid;grid-template-columns:repeat(7,32px);gap:2px}.cgrid i{font-style:normal;font-size:9px;color:var(--mut);text-align:center}
+.cd-vacio{visibility:hidden}.cd-out:hover{background:var(--line)}.cd-out-x{color:rgba(239,68,68,.8)}
+.cd.cd-ini{box-shadow:inset 3px 0 0 var(--fg)}.cd.cd-fin{box-shadow:inset -3px 0 0 var(--fg)}
+.exlist{font-size:11px;color:var(--mut);line-height:2}.exc{display:inline-block;background:rgba(239,68,68,.12);color:var(--bad);border-radius:4px;padding:2px 7px;margin:2px;font-size:10px}.exlist .ok{color:var(--ok)}
+.sf-t{font-size:11px;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}.aviso.rojo{background:rgba(239,68,68,.12);color:var(--bad)}
+@media (max-width:600px){.row2,.fechas,.info{grid-template-columns:1fr}.mgrid{grid-template-columns:1fr}}

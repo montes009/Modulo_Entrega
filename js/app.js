@@ -59,6 +59,14 @@
       }
     });
   });
+  // Campos con data-oninput="modulo.accion": cada cambio se envía al módulo (handleInput), p. ej. fecha/días del alquiler.
+  document.addEventListener('input', e => {
+    const el = e.target.closest('[data-oninput]');
+    if (!el) return;
+    const [mod, ...resto] = el.dataset.oninput.split('.');
+    const m = U.modulos[mod];
+    if (m && typeof m.handleInput === 'function') U.seguro(async () => m.handleInput(resto.join('.'), el));
+  });
   document.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.repeat && e.target.id === 'lg-pass') document.querySelector('[data-action="login"]').click(); });
   document.addEventListener('DOMContentLoaded', () => U.seguro(iniciar));
 })(window);

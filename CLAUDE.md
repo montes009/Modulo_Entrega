@@ -87,7 +87,7 @@ necesario a `window`:
 | Panel / Agenda | `panel.js` | ✅ | Recordatorios de hoy/vencidos, cotizaciones sin respuesta, alquileres que arrancan/terminan/vencidos, clientes en mora, negociaciones sin movimiento, pendientes libres |
 | Cotizaciones | `cotizaciones.js` | ✅ | Registrar, estados, cierres (ganada/perdida + motivo), proforma, auto-recordatorio de seguimiento |
 | Clientes | `clientes.js` | ✅ | Lista con filtro por estado, ficha (cotizaciones + recordatorios), acceso al hilo de negociación |
-| Máquinas | `maquinas.js` + `habiles.js` | ✅ | **Gantt**, alquileres, novedades; `UPBQ.Habiles` = único conteo de días hábiles (festivos en `upbq_festivos`) |
+| Máquinas | `maquinas.js` + `habiles.js` | ✅ | **Tarjetas** por máquina con "mapa de días" en chips + Gantt secundario; selector visual de período (inicio + días laborales → fin automático, botones Excluir Sáb/Dom/Fest, calendario táctil); novedades; `UPBQ.Habiles` = único motor de días (festivos en `upbq_festivos`) |
 | Negociaciones | `negociaciones.js` + `neg-parser.js` | ✅ | Chat por cliente, filtro por mes, adjuntos en Storage, import WhatsApp (.txt/.zip) y JSON |
 | Caja menor | `caja.js` | ⏳ no iniciado | **Esqueleto vacío** hasta que el usuario entregue el formato — no inventar el flujo |
 
@@ -115,6 +115,7 @@ se aplica en Supabase con el mismo contenido del archivo):
 | `003_upbq_negociaciones.sql` | `upbq_negociaciones` (UNIQUE cliente), `upbq_negociacion_mensajes` (hash único por hilo), bucket privado `upbq-negociaciones` |
 | `004_upbq_negociaciones_resumen.sql` | Vista `upbq_negociaciones_resumen` (`security_invoker`) |
 | `005_upbq_solo_coordinador.sql` | `upbq_coordinadores` + políticas `*_coord` en todas las tablas y en Storage (reemplazan `*_auth`) |
+| `006_upbq_alquiler_exclusiones.sql` | `excluir_sabados/domingos/festivos` en `upbq_alquileres` (qué días no cuentan, por alquiler) |
 
 Pendiente de crear: `upbq_caja_*` (esqueleto, cuando llegue el formato). Estados con `CHECK` que
 espejan `js/constantes.js`. Sobras del módulo viejo que **no** se tocaron: bucket `entregas-privado`
@@ -146,7 +147,7 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
   demo en la BD de ALCON OPS: el guard lo bloquea y la regla dura lo prohíbe.
 
 - **Pruebas en el repo (`tests/`)**: `node tests/test_parser.js` (parser de importación) y
-  `python3 tests/test_guard.py` (hook de protección) y `node tests/smoke_login.js` (login; requiere Playwright). Correrlas antes de tocar el parser o el hook.
+  `python3 tests/test_guard.py` (hook de protección) y `node tests/smoke_login.js` (login) y `node tests/smoke_maquinas.js` (tarjetas + selector de fechas; ambos con Playwright y `tests/stub-supabase.js`). Correrlas antes de tocar el parser o el hook.
 - **El sandbox de Claude Code web bloquea CDNs** (jsDelivr/cdnjs): no se puede probar contra Supabase real ni
   cargar `supabase-js`. Método usado: Playwright con `page.route('**/supabase-js@2')` devolviendo un
   **stub funcional** de Supabase (insert/upsert/únicos/Storage en memoria). Ojo: eso valida la lógica de
@@ -162,7 +163,14 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
   quedaba a pantalla completa tras entrar). Regla global `[hidden]{display:none!important}` al inicio del CSS; no quitarla.
   Toda acción de red disparable por teclado/clic (login) lleva bandera anti-doble-envío y se ignora `e.repeat`.
   Los logs de Supabase (`query_logs`, fuente `edge_logs`) muestran ráfagas de `grant_type=password`: síntoma de UI que no reacciona.
-- Cache-busting actual: scripts y CSS en `?v=3` (`app.js` y `app.css` en `?v=4`). Al agregar markup, avisar hard-refresh (Ctrl+Shift+R).
+- **Diseño de referencia = ALCON OPS (solo lectura).** Antes de diseñar UI de un módulo que ya existe allá, LEER cómo lo resolvieron:
+  `add_repo(access=read)` + `git clone --depth 1` en `/home/user/ops-alcon-admi` (fuera de este repo; nunca commitear ni editar ahí).
+  Piezas ya tomadas: `calcularDiasLaborables` (inicio + N días laborales → fin), `_corteRenderCalendario` (calendario mensual con
+  chips: rojo excluido / azul por trabajar / verde trabajado / rayado futuro), `_goProyRender` (KPIs + mapa de días), `.maq-card` en
+  `styles.css` (tarjetas). Los archivos son enormes (`js/cotizaciones_alquileres.js` ≈ 368 KB): buscar con Grep y leer por rangos.
+- **Semántica de días:** los *días laborales pactados* (N) se mantienen al cambiar los botones de exclusión; lo que cambia es la fecha fin.
+  Al elegir la fecha fin a mano o en el calendario, N se recalcula. `Habiles.contar` devuelve laborales / excluidos / calendario / netos.
+- Cache-busting actual: `habiles.js`, `maquinas.js`, `app.js` y `app.css` en `?v=5`; el resto en `?v=3`. Al agregar markup, avisar hard-refresh (Ctrl+Shift+R).
 
 ## Deploy
 

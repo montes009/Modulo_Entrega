@@ -58,3 +58,16 @@ cuándo — y llevar bien las cuentas de días trabajados.
   fijos (1-ene, 1-may, 20-jul, 7-ago, 8-dic, 25-dic); trasladados al lunes siguiente (Emiliani: 6-ene, 19-mar,
   29-jun, 15-ago, 12-oct, 1-nov, 11-nov); Semana Santa (Pascua −3 y −2) y Pascua +43 (Ascensión),
   +64 (Corpus Christi), +71 (Sagrado Corazón).
+
+## Rediseño según el módulo de referencia (2026-09-29) — LEER ANTES DE TOCAR LA UI
+
+- **Vista principal = tarjetas** (una por máquina; estados Alquilada / Reservada / Vencida / Disponible; filtros y Historial). Cada tarjeta
+  muestra cliente, ref `ALQ-xxxx`, Inicio · Días (netos) · Vence, badge "Faltan N d / Vence hoy / Venció hace N d / Inicia en N d" y el
+  **mapa de días** (chips `dd/mm`: verde trabajado, azul por trabajar, ámbar novedad, rojo excluido, anillo = hoy). El Gantt pasó a "Línea de tiempo".
+- **Selector de período (nuevo alquiler y edición):** Fecha de inicio + **Días laborales** → **fecha fin automática**. Botones rápidos 5/10/15/20/30.
+  Botones **Excluir: Sábados / Domingos / Festivos CO** (por alquiler, guardados en `excluir_*`). La fecha fin también se puede cambiar a mano o
+  **tocando el calendario** (modo "📍 el inicio" / "🏁 el fin"); al tocar el fin, los días laborales se recalculan. KPIs: laborales / excluidos / calendario (/ netos).
+- Motor único en `UPBQ.Habiles`: `fechaFin(inicio, n, opts)`, `contar(desde, hasta, novedades, opts)`, `esExcluido`, `opcionesDe(alquiler)`, `motivoExclusion`.
+  Ejemplo verificado: inicio lun 28-sep-2026 + 15 días laborales → fin 19-oct (excluye el festivo 12-oct); sin excluir festivos → 16-oct.
+- Novedades: siguen descontando días laborales (netos). No se registran/quitan con fechas sin guardar (evita perder la edición).
+- Pruebas: `node tests/smoke_maquinas.js` (compara contra una implementación de referencia independiente).

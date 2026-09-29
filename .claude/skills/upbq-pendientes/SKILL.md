@@ -13,8 +13,8 @@ description: >
 ## Estado global (actualizar en cada sesión)
 
 - **Fase actual:** CONSTRUIDO Y EN `main` (2026-09-29): Panel, Clientes, Cotizaciones, Máquinas (Gantt +
-  días hábiles + festivos) y Negociaciones (chat + import WhatsApp/JSON). Migraciones `sql/000`–`005`
-  aplicadas en Supabase `Modulo_Entrega`. Guard `guard-ops.py` activo. Cache `?v=3`.
+  días hábiles + festivos) y Negociaciones (chat + import WhatsApp/JSON). Migraciones `sql/000`–`006`
+  aplicadas en Supabase `Modulo_Entrega`. Guard `guard-ops.py` activo. Cache `?v=5` (habiles/maquinas/app/css).
 - **Riesgo #1:** TODO se probó con un Supabase simulado (el sandbox bloquea CDNs). **Falta la primera prueba
   con login real y datos reales** (RLS, Storage, subida de adjuntos, import de un chat verdadero).
 - **Acceso:** el login del coordinador ya existe (creado 2026-09-29) y es el único autorizado por RLS
@@ -22,6 +22,7 @@ description: >
   Hard-refresh (Ctrl+Shift+R) tras cada despliegue con markup nuevo.
 - **Siguiente paso:** (1) prueba real y corrección de lo que salga; (2) **Caja menor** en cuanto el usuario
   entregue el formato — no inventar el flujo.
+- **Rediseño de Máquinas (tarjetas + selector visual de fechas, según ALCON OPS) hecho el 2026-09-29;** falta que el usuario lo vea desplegado y pida ajustes.
 - **Estado de `main`:** al día con todo, incluida `sql/005` (RLS solo coordinador), desde 2026-09-29.
 - **Datos DEMO:** se sembraron el 2026-09-29 y ya fueron **BORRADOS** (BD limpia, solo quedan festivos y el coordinador).
   Para volver a verlos: `sql/demo/demo_seed.sql`; para quitarlos: `sql/demo/demo_limpiar.sql`.
