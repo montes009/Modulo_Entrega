@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
   const U = global.UPBQ;
-  const TABS = { pan: 'Panel', cli: 'Clientes', cot: 'Cotizaciones', maq: 'Máquinas', neg: 'Negociaciones' };
+  const TABS = { pan: 'Panel', cot: 'Cotizaciones', alq: 'Alquileres', maq: 'Máquinas', cli: 'Clientes', neg: 'Negociaciones' };
   let tab = 'pan';
 
   async function irA(t) {
@@ -67,6 +67,12 @@
     const m = U.modulos[mod];
     if (m && typeof m.handleInput === 'function') U.seguro(async () => m.handleInput(resto.join('.'), el));
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.repeat && e.target.id === 'lg-pass') document.querySelector('[data-action="login"]').click(); });
+  // Enter en un campo dispara el botón indicado: el login, o cualquier input con data-enter="modulo.accion" (p. ej. añadir una nota rápida).
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.repeat) return;
+    const ac = e.target.id === 'lg-pass' ? 'login' : e.target.dataset && e.target.dataset.enter;
+    const b = ac && document.querySelector('[data-action="' + ac + '"]');
+    if (b) b.click();
+  });
   document.addEventListener('DOMContentLoaded', () => U.seguro(iniciar));
 })(window);

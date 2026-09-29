@@ -105,3 +105,17 @@ fieldset{border:1px solid var(--line);border-radius:10px;margin:10px 0;padding:6
 .exlist{font-size:11px;color:var(--mut);line-height:2}.exc{display:inline-block;background:rgba(239,68,68,.12);color:var(--bad);border-radius:4px;padding:2px 7px;margin:2px;font-size:10px}.exlist .ok{color:var(--ok)}
 .sf-t{font-size:11px;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}.aviso.rojo{background:rgba(239,68,68,.12);color:var(--bad)}
 @media (max-width:600px){.row2,.fechas,.info{grid-template-columns:1fr}.mgrid{grid-template-columns:1fr}}
+/* Enfoque agenda: alquileres por tarjeta, máquinas varadas, notas rápidas */
+.mcard.varada{--acc:var(--bad)}.badge.est-varada{background:var(--bad);color:#fff}
+.sin-eq{color:var(--warn);font-weight:700}.mc-der{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.mc-ref{font-size:11px;color:var(--pri);font-weight:700}
+.mc-nota{font-size:12px;color:var(--mut);background:var(--bg);padding:6px 8px;border-radius:8px;white-space:pre-wrap}
+.aviso.amb{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.badge.por-montar{background:var(--warn);color:#fff}.badge.alq-ok{background:var(--ok);color:#fff}
+.widget h3 .der{float:right}.widget .item[data-action]{cursor:pointer}
+.pen-add{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-bottom:8px}.pen-add input,.pen-add select{margin:0}.pen-add #pen-texto{grid-column:1/-1}
+.item.pen{cursor:default}.pen-txt{flex:1;min-width:0}.item.hecha b{text-decoration:line-through;color:var(--mut)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}.p-alta{background:var(--bad)}.p-media{background:var(--warn)}.p-baja{background:var(--ok)}
+
+
+.item .bgs{display:flex;gap:6px;flex-wrap:wrap;flex:1;margin-left:8px}
+.pen-add select{min-width:96px}

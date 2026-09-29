@@ -26,6 +26,16 @@ Stack: **JS vanilla (sin build) + Supabase (Auth + Postgres + Storage)**.
   renombrado sin "alcon" no se detectaría; y como es texto, puede dar falsos positivos (p. ej. un
   `sed` que mencione "alcon"): ante un bloqueo, usar Write/Edit en vez de esquivarlo. Ante duda, preguntar.
 
+## Enfoque del producto (definido por el usuario, 2026-09-29) — RESPETAR
+
+**Es una AGENDA con notas rápidas y pendientes, no un ERP.** Nada de burocracia ni bloqueos: solo control.
+- **Cotización** = la nota comercial: *"el cliente X pidió un brazo por 15 días, valor $Y"* (equipo solicitado + días + valor).
+- Cuando el cliente **aprueba** (estado `cerrada_ganada`, etiqueta "Aprobada") se **monta el alquiler sobre esa cotización**
+  (fechas con el selector visual y equipo). El equipo puede quedar **sin asignar** y asignarse después.
+- **Máquinas** = tablero VISUAL de equipos **Disponible / Varada** (estado manual, cambiable con un clic, con nota rápida). No decide nada:
+  un equipo varado u ocupado **se puede asignar igual a un alquiler** (solo se avisa).
+- **Panel** = la agenda de hoy: recordatorios (crear, posponer), pendientes/notas rápidas (fecha, prioridad), y avisos de lo que falta.
+
 ## Qué es el sistema
 
 Herramienta de un solo usuario (el coordinador) para administrar la sede: cotizaciones,
@@ -84,10 +94,11 @@ necesario a `window`:
 | Módulo | Archivo | Estado | Qué hace |
 |---|---|---|---|
 | Base | `config.js`, `constantes.js`, `util.js`, `app.js` | ✅ | Config Supabase, **constantes de estados**, helpers (`esc`, `today`, toast, modal, `confirmar`), login + nav + listener delegado |
-| Panel / Agenda | `panel.js` | ✅ | Recordatorios de hoy/vencidos, cotizaciones sin respuesta, alquileres que arrancan/terminan/vencidos, clientes en mora, negociaciones sin movimiento, pendientes libres |
-| Cotizaciones | `cotizaciones.js` | ✅ | Registrar, estados, cierres (ganada/perdida + motivo), proforma, auto-recordatorio de seguimiento |
+| Panel / Agenda | `panel.js` | ✅ | Recordatorios (crear/posponer), pendientes = notas rápidas (fecha, prioridad, editar, borrar, hechos), aprobadas por montar alquiler, cotizaciones sin respuesta, alquileres que arrancan/terminan/vencidos/sin equipo, equipos varados, clientes en mora, negociaciones sin movimiento |
+| Cotizaciones | `cotizaciones.js` | ✅ | Pedido (equipo · días · valor): crear/editar, estados, **Aprobada → montar alquiler**, No aprobada (motivo), reabrir, proforma, auto-recordatorio de seguimiento |
 | Clientes | `clientes.js` | ✅ | Lista con filtro por estado, ficha (cotizaciones + recordatorios), acceso al hilo de negociación |
-| Máquinas | `maquinas.js` + `habiles.js` | ✅ | **Tarjetas** por máquina con "mapa de días" en chips + Gantt secundario; selector visual de período (inicio + días laborales → fin automático, botones Excluir Sáb/Dom/Fest, calendario táctil); novedades; `UPBQ.Habiles` = único motor de días (festivos en `upbq_festivos`) |
+| Alquileres | `alquileres.js` + `habiles.js` | ✅ | **Tarjetas por alquiler** con "mapa de días" en chips + línea de tiempo; se monta sobre una cotización aprobada; selector visual (inicio + días laborales → fin automático, botones Excluir Sáb/Dom/Fest, calendario táctil); equipo opcional/sin bloqueos; novedades; `UPBQ.Habiles` = único motor de días |
+| Máquinas | `maquinas.js` | ✅ | Tablero visual **Disponible / Varada** (un clic + nota rápida), solo informativo |
 | Negociaciones | `negociaciones.js` + `neg-parser.js` | ✅ | Chat por cliente, filtro por mes, adjuntos en Storage, import WhatsApp (.txt/.zip) y JSON |
 | Caja menor | `caja.js` | ⏳ no iniciado | **Esqueleto vacío** hasta que el usuario entregue el formato — no inventar el flujo |
 
@@ -99,7 +110,9 @@ siempre. Nunca dos listas que puedan divergir.
 - **Cotización:** `borrador`, `enviada`, `en_seguimiento`, `cerrada_ganada`, `cerrada_perdida`.
 - **Cliente:** `activo`, `en_mora`, `bloqueado`, `prospecto`, `inactivo`.
 - **Recordatorio:** `pendiente`, `hecho`, `negocio_cae`.
-- **Alquiler:** `activo`, `finalizado` (mínimo; ampliar solo si el negocio lo pide).
+- **Alquiler:** `activo`, `finalizado` (mínimo; ampliar solo si el negocio lo pide). En pantalla se DERIVA: Activo / Por iniciar / Vencido / Finalizado.
+- **Máquina:** `disponible`, `varada` (manual, libre). "En alquiler" se muestra derivado de los alquileres, no es un estado.
+- **Prioridad de pendiente:** `baja`, `media`, `alta`.
 
 ## Modelo de datos (Supabase — prefijo `upbq_`)
 
@@ -116,6 +129,8 @@ se aplica en Supabase con el mismo contenido del archivo):
 | `004_upbq_negociaciones_resumen.sql` | Vista `upbq_negociaciones_resumen` (`security_invoker`) |
 | `005_upbq_solo_coordinador.sql` | `upbq_coordinadores` + políticas `*_coord` en todas las tablas y en Storage (reemplazan `*_auth`) |
 | `006_upbq_alquiler_exclusiones.sql` | `excluir_sabados/domingos/festivos` en `upbq_alquileres` (qué días no cuentan, por alquiler) |
+| `007_upbq_agenda_simple.sql` | `cotizaciones.dias`; `alquileres.maquina_id` opcional; `maquinas.estado` ∈ disponible/varada + `nota` |
+| `008_upbq_alquiler_nro.sql` | `alquileres.nro` consecutivo (ALQ-0001) |
 
 Pendiente de crear: `upbq_caja_*` (esqueleto, cuando llegue el formato). Estados con `CHECK` que
 espejan `js/constantes.js`. Sobras del módulo viejo que **no** se tocaron: bucket `entregas-privado`
@@ -147,7 +162,7 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
   demo en la BD de ALCON OPS: el guard lo bloquea y la regla dura lo prohíbe.
 
 - **Pruebas en el repo (`tests/`)**: `node tests/test_parser.js` (parser de importación) y
-  `python3 tests/test_guard.py` (hook de protección) y `node tests/smoke_login.js` (login) y `node tests/smoke_maquinas.js` (tarjetas + selector de fechas; ambos con Playwright y `tests/stub-supabase.js`). Correrlas antes de tocar el parser o el hook.
+  `python3 tests/test_guard.py` (hook de protección) y `node tests/smoke_login.js` (login) y `node tests/smoke_alquileres.js` (montar alquiler + selector de fechas), `node tests/smoke_maquinas.js` (tablero), `node tests/smoke_agenda.js` (cotización→alquiler + Panel); todos con Playwright y `tests/stub-supabase.js`. Correrlas antes de tocar el parser o el hook.
 - **El sandbox de Claude Code web bloquea CDNs** (jsDelivr/cdnjs): no se puede probar contra Supabase real ni
   cargar `supabase-js`. Método usado: Playwright con `page.route('**/supabase-js@2')` devolviendo un
   **stub funcional** de Supabase (insert/upsert/únicos/Storage en memoria). Ojo: eso valida la lógica de
@@ -170,7 +185,7 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
   `styles.css` (tarjetas). Los archivos son enormes (`js/cotizaciones_alquileres.js` ≈ 368 KB): buscar con Grep y leer por rangos.
 - **Semántica de días:** los *días laborales pactados* (N) se mantienen al cambiar los botones de exclusión; lo que cambia es la fecha fin.
   Al elegir la fecha fin a mano o en el calendario, N se recalcula. `Habiles.contar` devuelve laborales / excluidos / calendario / netos.
-- Cache-busting actual: `habiles.js`, `maquinas.js`, `app.js` y `app.css` en `?v=5`; el resto en `?v=3`. Al agregar markup, avisar hard-refresh (Ctrl+Shift+R).
+- Cache-busting actual: `app.css` y `cotizaciones.js` en `?v=7`; `constantes/alquileres/maquinas/panel/app` en `?v=6`; `habiles` `?v=5`; el resto en `?v=3` (o `?v=1`). Al agregar markup, avisar hard-refresh (Ctrl+Shift+R).
 
 ## Deploy
 

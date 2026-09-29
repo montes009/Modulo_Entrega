@@ -50,3 +50,11 @@ negociaciones sin movimiento (cotización abierta + último mensaje ≥ `UPBQ_NE
 clientes en mora · pendientes libres (alta rápida y check).
 - El Panel **relee todo al entrar a la pestaña** (no hay caché): `U.dirty` es hoy informativo.
 - Umbrales en `js/constantes.js`; "hoy" siempre con `UPBQ.today()` (Bogotá).
+
+## ACTUALIZACIÓN 2026-09-29 — el Panel ES la agenda (manda sobre lo anterior)
+
+- **Recordatorios:** crear a mano (`+ Recordatorio`, cliente opcional, chips Hoy/Mañana/+3/+1 sem), **Posponer** (Mañana/+3 d/+1 sem/+2 sem/fecha), Hecho, Negocio cae (solo los ligados a cotización).
+- **Pendientes = notas rápidas:** texto (Enter añade) + fecha opcional + prioridad (alta/media/baja); ordenados por prioridad y fecha; fecha vencida en rojo;
+  ✓ hecho, ✎ editar, 🗑 borrar (confirma), "Ver hechos" con ↩ reabrir.
+- Widgets nuevos: **Aprobadas: montar alquiler**, Alquileres sin equipo asignado, Equipos varados. Todos los ítems navegan a su registro (`pan.ir-alq/cli/neg/maq`, `pan.montar`).
+- Pruebas: `tests/smoke_agenda.js`.

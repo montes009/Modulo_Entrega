@@ -5,7 +5,7 @@ do $$
 declare
   hoy date := (now() at time zone 'America/Bogota')::date;
   c_andina uuid; c_caribe uuid; c_puertos uuid; c_vias uuid; c_costa uuid; c_sol uuid;
-  m_gr uuid; m_re uuid; m_mn uuid; m_vb uuid; m_pl uuid; m_ex uuid; m_cp uuid; a_ex uuid;
+  m_gr uuid; m_re uuid; m_mn uuid; m_vb uuid; m_pl uuid; m_ex uuid; m_cp uuid; a_ex uuid; q_comp uuid;
   q_grua50 uuid; q_retro uuid; q_mini uuid; q_plat uuid; q_vibro uuid; q_borrador uuid; q_grua80 uuid;
   a_gr uuid;
   h_andina uuid; h_puertos uuid; h_vias uuid;
@@ -125,4 +125,18 @@ begin
     (10, '12:15', 'nosotros', null::uuid, 'Sí señor, por días, semanas o meses. ¿Para qué tipo de obra?'),
     (9,  '09:40', 'nosotros', q_retro,   'Le envié la cotización de la retroexcavadora. Quedo atento.')
   ) as v(dias, hora, emisor, cot, texto);
+
+  -- ── Ajustes del enfoque "agenda" (migración 007): días en cotizaciones, equipo varado, aprobadas sin alquiler, alquiler sin equipo
+  update public.upbq_cotizaciones q set dias = case q.equipo
+      when 'Grúa 50 t' then 15 when 'Retroexcavadora' then 10 when 'Minicargador' then 8
+      when 'Plataforma elevadora' then 5 when 'Vibrocompactador' then 10 when 'Grúa 80 t' then 12 end
+    where q.cliente_id in (select id from public.upbq_clientes where nombre like 'DEMO · %');
+  update public.upbq_maquinas set estado = 'varada', nota = 'Falla en el sistema hidráulico de la tijera. Repuesto llega el viernes.' where codigo = 'DEMO-PL-05';
+  update public.upbq_maquinas set nota = 'Revisión de 250 h pendiente el mes próximo.' where codigo = 'DEMO-GR-01';
+  insert into public.upbq_cotizaciones (cliente_id, equipo, valor, dias, fecha, estado, motivo_cierre, fecha_cierre, notas)
+    values (c_vias, 'Brazo hidráulico', 14500000, 15, hoy - 3, 'cerrada_ganada', 'Aprobada por el cliente', hoy - 1, 'Necesitan arrancar la próxima semana.');
+  insert into public.upbq_cotizaciones (cliente_id, equipo, valor, dias, fecha, estado, motivo_cierre, fecha_cierre)
+    values (c_andina, 'Compresor', 3200000, 5, hoy - 2, 'cerrada_ganada', 'Aprobada por el cliente', hoy - 1) returning id into q_comp;
+  insert into public.upbq_alquileres (maquina_id, cliente_id, cotizacion_id, fecha_inicio, fecha_fin, estado, notas)
+    values (null, c_andina, q_comp, hoy + 2, hoy + 2 + 6, 'activo', 'Equipo por asignar: definir cuál compresor sale.');
 end $$;

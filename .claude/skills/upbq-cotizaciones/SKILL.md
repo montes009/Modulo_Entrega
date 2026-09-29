@@ -47,3 +47,13 @@ Registrar y dar seguimiento a las cotizaciones de la sede, y no perder ningún c
 - Cada acción re-pinta lista **y** detalle. Desde el Panel, "sin respuesta" abre el detalle
   (`cot.ver-desde-panel`). Umbral "sin respuesta" = `UPBQ_SIN_RESPUESTA_DIAS` (5).
 - Los mensajes de Negociaciones pueden vincularse a una cotización (badge en el chat).
+
+## ACTUALIZACIÓN 2026-09-29 — enfoque agenda (manda sobre lo anterior)
+
+- La cotización es la **nota del pedido**: cliente + equipo solicitado + **días** + valor (`upbq_cotizaciones.dias`). Se puede **editar**.
+- **Aprobada** = `cerrada_ganada` (etiqueta "Aprobada"; no exige motivo: nota opcional, por defecto "Aprobada por el cliente").
+  Botones: "Solo aprobar" / **"Aprobar y montar alquiler"** (abre Alquileres con cliente y días prellenados). También "🚀 Montar alquiler" desde el detalle.
+- **No aprobada** = `cerrada_perdida` (etiqueta "No aprobada"; motivo obligatorio). **Reabrir** devuelve la cotización a "En seguimiento".
+- Chip "🚀 Aprobadas sin alquiler" + badge "Montar alquiler" / "ALQ-000N" en la lista; el detalle enlaza al alquiler (`cot.ver-alq`).
+- El Panel muestra "Aprobadas: montar alquiler" con botón directo.
+- Pruebas: `node tests/smoke_agenda.js`.

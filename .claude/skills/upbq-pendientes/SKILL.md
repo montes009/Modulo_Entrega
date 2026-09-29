@@ -13,8 +13,8 @@ description: >
 ## Estado global (actualizar en cada sesión)
 
 - **Fase actual:** CONSTRUIDO Y EN `main` (2026-09-29): Panel, Clientes, Cotizaciones, Máquinas (Gantt +
-  días hábiles + festivos) y Negociaciones (chat + import WhatsApp/JSON). Migraciones `sql/000`–`006`
-  aplicadas en Supabase `Modulo_Entrega`. Guard `guard-ops.py` activo. Cache `?v=5` (habiles/maquinas/app/css).
+  días hábiles + festivos) y Negociaciones (chat + import WhatsApp/JSON). Migraciones `sql/000`–`008`
+  aplicadas en Supabase `Modulo_Entrega`. Guard `guard-ops.py` activo. Cache `?v=6/7` (ver CLAUDE.md).
 - **Riesgo #1:** TODO se probó con un Supabase simulado (el sandbox bloquea CDNs). **Falta la primera prueba
   con login real y datos reales** (RLS, Storage, subida de adjuntos, import de un chat verdadero).
 - **Acceso:** el login del coordinador ya existe (creado 2026-09-29) y es el único autorizado por RLS
@@ -22,27 +22,24 @@ description: >
   Hard-refresh (Ctrl+Shift+R) tras cada despliegue con markup nuevo.
 - **Siguiente paso:** (1) prueba real y corrección de lo que salga; (2) **Caja menor** en cuanto el usuario
   entregue el formato — no inventar el flujo.
-- **Rediseño de Máquinas (tarjetas + selector visual de fechas, según ALCON OPS) hecho el 2026-09-29;** falta que el usuario lo vea desplegado y pida ajustes.
+- **Enfoque agenda aplicado el 2026-09-29** (ver CLAUDE.md "Enfoque del producto"); la rama tiene el cambio, falta llevarlo a `main` cuando el usuario lo autorice.
 - **Estado de `main`:** al día con todo, incluida `sql/005` (RLS solo coordinador), desde 2026-09-29.
 - **Datos DEMO: CARGADOS de nuevo (2026-09-29, ampliados):** 6 clientes, 7 máquinas, 7 cotizaciones, 6 alquileres, 3 novedades,
   3 hilos (21 mensajes)… todo marcado `DEMO`. **Borrar antes del uso real:** `sql/demo/demo_limpiar.sql`. Re-sembrar: `sql/demo/demo_seed.sql`.
 - **Deuda menor:** añadir festivos 2029 antes de fin de 2028; bucket viejo `entregas-privado` sin usar.
 
-## Huecos detectados revisando el código con datos cargados (2026-09-29) — candidatos a lo siguiente
+## Estado del rediseño "agenda" (2026-09-29) y lo que falta
 
-Orden sugerido por impacto en el día a día:
-1. **Cotizaciones:** no se pueden EDITAR (equipo/valor/notas) y una cotización ganada no ofrece "crear alquiler" prellenado
-   (`upbq_alquileres.cotizacion_id` existe pero la UI no lo llena). Es el flujo principal del negocio.
-2. **Recordatorios:** solo nacen automáticos desde una cotización. Faltan crear a mano (con cliente opcional) y **posponer** (cambiar fecha);
-   hoy solo se marcan Hecho / Negocio cae.
-3. **Pendientes libres:** solo texto + check. Faltan fecha y prioridad al crear, editar, borrar y ver los hechos.
-4. **Máquinas:** solo se crean; falta editar (código/tipo/descripción) y darlas de baja.
-5. **Número de alquiler legible:** hoy `ALQ-` + últimos 4 del UUID; conviene un consecutivo (ALQ-0001).
-6. **Panel:** los widgets no navegan al registro (mora → ficha del cliente, cotización → detalle ya sí; recordatorio → cliente no).
-7. **Negociaciones:** no se puede editar un mensaje ni vincularlo a una cotización después; la lista no tiene búsqueda.
-8. **Clientes:** sin búsqueda por nombre; el "historial de contacto" son solo recordatorios (no hay registro de llamadas).
-9. Una novedad no extiende la fecha fin (solo descuenta días netos): decidir si el negocio quiere "extender por novedad".
-10. **Caja menor:** sigue esperando el formato del usuario.
+Hecho: cotización con días y editable · Aprobada → montar alquiler · Alquileres (tarjetas, equipo opcional sin bloqueos, ALQ-000N) ·
+Máquinas = tablero Disponible/Varada con nota · Panel con recordatorios manuales/posponer y pendientes con fecha/prioridad/editar/borrar.
+
+Huecos que siguen abiertos (por prioridad):
+1. **Prueba real** con el Supabase de verdad y ajustes visuales que pida el usuario.
+2. Negociaciones: editar un mensaje / vincularlo a una cotización después; búsqueda en la lista.
+3. Clientes: búsqueda por nombre; registro de contactos (llamadas) más allá de recordatorios.
+4. Una novedad no extiende la fecha fin (solo descuenta días netos): decidir si el negocio quiere "extender por novedad".
+5. Vista de calendario/semana de la agenda (recordatorios + inicios/fines de alquiler) — solo si el usuario la pide.
+6. **Caja menor:** sigue esperando el formato del usuario.
 
 ## Decisiones ya cerradas
 

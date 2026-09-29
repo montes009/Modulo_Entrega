@@ -71,3 +71,14 @@ cuándo — y llevar bien las cuentas de días trabajados.
   Ejemplo verificado: inicio lun 28-sep-2026 + 15 días laborales → fin 19-oct (excluye el festivo 12-oct); sin excluir festivos → 16-oct.
 - Novedades: siguen descontando días laborales (netos). No se registran/quitan con fechas sin guardar (evita perder la edición).
 - Pruebas: `node tests/smoke_maquinas.js` (compara contra una implementación de referencia independiente).
+
+## ACTUALIZACIÓN 2026-09-29 — separación Alquileres / Máquinas (manda sobre lo anterior)
+
+- **Máquinas (`js/maquinas.js`) = tablero visual** de equipos **Disponible / Varada**. Estado manual y libre (botón de un clic), nota rápida
+  ("por qué está varada"), info de alquiler solo informativa ("En alquiler: X · hasta…", "⚠ Varada con un alquiler en curso"). Editar/eliminar
+  (solo si no tiene alquileres). No hay estado "alquilada": se deriva de los alquileres. Pruebas: `tests/smoke_maquinas.js`.
+- **Alquileres (`js/alquileres.js`, pestaña propia)**: tarjetas por alquiler, línea de tiempo, se monta sobre una cotización aprobada (`desde-cot`) o suelto.
+  **El equipo es opcional** ("Asignar después") y **nunca se bloquea**: varado u ocupado en las mismas fechas → solo aviso ámbar. Estados libres: Finalizar / Reabrir.
+  Número consecutivo `ALQ-0001` (`upbq_alquileres.nro`). Filtros: En curso / Activos / Por iniciar / Vencidos / Sin equipo / Finalizados.
+  Pruebas: `tests/smoke_alquileres.js`.
+- El selector visual de fechas (secciones anteriores) sigue igual, ahora en Alquileres.

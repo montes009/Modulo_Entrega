@@ -11,15 +11,17 @@ const DB = { upbq_clientes:[], upbq_negociaciones:[], upbq_negociacion_mensajes:
   upbq_alquileres:[], upbq_alquiler_novedades:[], upbq_recordatorios:[], upbq_pendientes:[] };
 const STORE = new Map(); window.__store = STORE; window.__db = DB; window.__logins = 0; let n = 0, sesion = {};
 const uuid = () => 'id-' + (++n);
-const DEFAULTS = { upbq_alquileres: { estado:'activo', excluir_sabados:true, excluir_domingos:true, excluir_festivos:true } };
+const DEFAULTS = { upbq_alquileres: { estado:'activo', excluir_sabados:true, excluir_domingos:true, excluir_festivos:true }, upbq_maquinas: { estado:'disponible' },
+  upbq_pendientes: { prioridad:'media', hecho:false }, upbq_recordatorios: { estado:'pendiente', auto:false }, upbq_cotizaciones: { proforma_solicitada:false }, upbq_clientes: { estado:'prospecto' } };
 function resumen(){ return DB.upbq_negociaciones.map(h => { const ms = DB.upbq_negociacion_mensajes.filter(m => m.negociacion_id === h.id);
   return { id:h.id, cliente_id:h.cliente_id, mensajes:ms.length, ultima: ms.map(m=>m.fecha).sort().pop() || null }; }); }
 function tabla(name){ return name === 'upbq_negociaciones_resumen' ? resumen() : (DB[name] = DB[name] || []); }
 function unir(name, r){
   const o = Object.assign({}, r);
-  if (name === 'upbq_alquileres' || name === 'upbq_cotizaciones') o.upbq_clientes = DB.upbq_clientes.find(c => c.id === r.cliente_id) || null;
+  if (name === 'upbq_alquileres' || name === 'upbq_cotizaciones' || name === 'upbq_recordatorios') o.upbq_clientes = DB.upbq_clientes.find(c => c.id === r.cliente_id) || null;
   if (name === 'upbq_alquileres') o.upbq_alquiler_novedades = DB.upbq_alquiler_novedades.filter(x => x.alquiler_id === r.id);
   if (name === 'upbq_alquileres') o.upbq_maquinas = DB.upbq_maquinas.find(m => m.id === r.maquina_id) || null;
+  if (name === 'upbq_alquileres') o.upbq_cotizaciones = DB.upbq_cotizaciones.find(c => c.id === r.cotizacion_id) || null;
   return o;
 }
 function query(name){
@@ -43,12 +45,17 @@ function query(name){
                     (name === 'upbq_maquinas' && t.some(x => x.codigo === r.codigo)) ||
                     (name === 'upbq_negociacion_mensajes' && t.some(x => x.negociacion_id === r.negociacion_id && x.hash === r.hash));
         if (dup) { if (st.op === 'upsert' && st.opts.ignoreDuplicates) continue; const e = new Error('duplicate key'); e.code = '23505'; throw e; }
-        const row = Object.assign({ id: uuid(), created_at: new Date(Date.now() + t.length).toISOString() }, DEFAULTS[name] || {}, r); t.push(row); made.push(row);
+        const row = Object.assign({ id: uuid(), created_at: new Date(Date.now() + t.length).toISOString() }, DEFAULTS[name] || {}, r);
+        if (name === 'upbq_alquileres' && row.nro == null) row.nro = t.reduce((m, x) => Math.max(m, x.nro || 0), 0) + 1; // identity
+        t.push(row); made.push(row);
       }
       return { data: st.ret ? (st.one ? made[0] : made) : null, error: null };
     }
     let rows = t.filter(r => st.f.every(f => f(r)));
-    if (st.op === 'delete') { rows.forEach(r => t.splice(t.indexOf(r), 1)); return { data: null, error: null }; }
+    if (st.op === 'delete') {
+      if (name === 'upbq_maquinas' && rows.some(m => DB.upbq_alquileres.some(a => a.maquina_id === m.id))) { const e = new Error('FK restrict'); e.code = '23503'; throw e; } // on delete restrict
+      rows.forEach(r => t.splice(t.indexOf(r), 1)); return { data: null, error: null };
+    }
     if (st.op === 'update') { rows.forEach(r => Object.assign(r, st.val)); return { data: null, error: null }; }
     for (const [c, asc] of st.ord.slice().reverse()) rows = rows.slice().sort((a, b) => a[c] === b[c] ? 0 : (a[c] < b[c] ? -1 : 1) * (asc ? 1 : -1));
     if (st.lim) rows = rows.slice(0, st.lim);
