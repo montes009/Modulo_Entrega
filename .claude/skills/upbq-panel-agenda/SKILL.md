@@ -41,3 +41,12 @@ Notas rápidas del coordinador: texto, fecha, prioridad, check (hecho). CRUD dir
 - El Panel LEE de los otros módulos; marcar `dirty` el panel cuando cambien datos que
   resume (cotización nueva, cliente a mora, alquiler cerrado…).
 - Toda interpolación de texto libre va con `esc()`.
+
+## Implementación (hecha · `js/panel.js`)
+
+Widgets: recordatorios de hoy y vencidos (botones Hecho / Negocio cae) · cotizaciones sin respuesta ·
+alquileres que arrancan (7 d) · máquinas que se liberan (7 d) · alquileres vencidos sin finalizar ·
+negociaciones sin movimiento (cotización abierta + último mensaje ≥ `UPBQ_NEG_SIN_MOVIMIENTO_DIAS`, 7) ·
+clientes en mora · pendientes libres (alta rápida y check).
+- El Panel **relee todo al entrar a la pestaña** (no hay caché): `U.dirty` es hoy informativo.
+- Umbrales en `js/constantes.js`; "hoy" siempre con `UPBQ.today()` (Bogotá).

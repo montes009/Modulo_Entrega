@@ -79,16 +79,17 @@ necesario a `window`:
 - Los **días de novedad** (no trabajados: paro, clima) registrados en un alquiler se
   **descuentan** del conteo hábil.
 
-## Módulos del sistema
+## Módulos del sistema (todos en `js/`, cargados por `index.html`)
 
-| Módulo | Archivo (previsto) | Qué hace |
-|---|---|---|
-| Panel / Agenda | `js/panel.js` | Vista de inicio: recordatorios de hoy/vencidos, alquileres que arrancan/terminan, cotizaciones sin respuesta, clientes en mora, máquinas que se liberan, pendientes libres |
-| Cotizaciones | `js/cotizaciones.js` | Registrar, estados, cierres (ganada/perdida + motivo), marcar proforma solicitada, auto-recordatorio de seguimiento |
-| Clientes | `js/clientes.js` | Lista con estado (activo/en_mora/bloqueado/prospecto/inactivo), filtro, historial de contacto |
-| Máquinas / Disponibilidad | `js/maquinas.js` | Vista **Gantt**: fila por máquina, barras por alquiler activo (cliente/inicio/fin), días hábiles, notas de novedad |
-| Caja menor | `js/caja.js` | **Esqueleto vacío** hasta que el usuario entregue el formato |
-| Bitácora de Negociaciones | `js/negociaciones.js` | Visor tipo chat, **un hilo por cliente**, filtro por mes, texto+imágenes+PDF, carga manual (formulario **y** import de export WhatsApp/JSON) |
+| Módulo | Archivo | Estado | Qué hace |
+|---|---|---|---|
+| Base | `config.js`, `constantes.js`, `util.js`, `app.js` | ✅ | Config Supabase, **constantes de estados**, helpers (`esc`, `today`, toast, modal, `confirmar`), login + nav + listener delegado |
+| Panel / Agenda | `panel.js` | ✅ | Recordatorios de hoy/vencidos, cotizaciones sin respuesta, alquileres que arrancan/terminan/vencidos, clientes en mora, negociaciones sin movimiento, pendientes libres |
+| Cotizaciones | `cotizaciones.js` | ✅ | Registrar, estados, cierres (ganada/perdida + motivo), proforma, auto-recordatorio de seguimiento |
+| Clientes | `clientes.js` | ✅ | Lista con filtro por estado, ficha (cotizaciones + recordatorios), acceso al hilo de negociación |
+| Máquinas | `maquinas.js` + `habiles.js` | ✅ | **Gantt**, alquileres, novedades; `UPBQ.Habiles` = único conteo de días hábiles (festivos en `upbq_festivos`) |
+| Negociaciones | `negociaciones.js` + `neg-parser.js` | ✅ | Chat por cliente, filtro por mes, adjuntos en Storage, import WhatsApp (.txt/.zip) y JSON |
+| Caja menor | `caja.js` | ⏳ no iniciado | **Esqueleto vacío** hasta que el usuario entregue el formato — no inventar el flujo |
 
 ## Modelo único de estados (una sola fuente de verdad)
 
@@ -102,13 +103,21 @@ siempre. Nunca dos listas que puedan divergir.
 
 ## Modelo de datos (Supabase — prefijo `upbq_`)
 
-Misma base de Supabase del repo; **todas las tablas nuevas con prefijo `upbq_`** para no
-chocar con nada preexistente. Sin `empresa_id` (un solo tenant). Migraciones versionadas.
+Proyecto Supabase **`Modulo_Entrega`** (`tkekmpxwefjlkwegamfz`). Todas las tablas nuevas con prefijo
+`upbq_`. Sin `empresa_id` (un solo tenant). **Migraciones versionadas en `sql/`** (numeradas; cada una
+se aplica en Supabase con el mismo contenido del archivo):
 
-`upbq_clientes`, `upbq_cotizaciones`, `upbq_maquinas`, `upbq_alquileres`,
-`upbq_alquiler_novedades`, `upbq_recordatorios`, `upbq_pendientes`,
-`upbq_negociaciones` (un hilo por cliente), `upbq_negociacion_mensajes` (mensajes/adjuntos),
-`upbq_caja_*` (esqueleto). Estados con `CHECK` que espejen las constantes JS.
+| Archivo | Contenido |
+|---|---|
+| `000_limpiar_funciones_viejas.sql` | Limpieza del antiguo módulo de entregas (funciones RPC + políticas de su bucket) |
+| `001_upbq_base.sql` | `upbq_clientes`, `_cotizaciones`, `_maquinas`, `_alquileres`, `_alquiler_novedades`, `_recordatorios`, `_pendientes` (+ trigger `updated_at`) |
+| `002_upbq_festivos.sql` | `upbq_festivos` (Colombia 2026-2028; **añadir 2029 antes de fin de 2028**) |
+| `003_upbq_negociaciones.sql` | `upbq_negociaciones` (UNIQUE cliente), `upbq_negociacion_mensajes` (hash único por hilo), bucket privado `upbq-negociaciones` |
+| `004_upbq_negociaciones_resumen.sql` | Vista `upbq_negociaciones_resumen` (`security_invoker`) |
+
+Pendiente de crear: `upbq_caja_*` (esqueleto, cuando llegue el formato). Estados con `CHECK` que
+espejan `js/constantes.js`. Sobras del módulo viejo que **no** se tocaron: bucket `entregas-privado`
+y 2 usuarios en `auth.users` (se reciclan para el login).
 
 ## Almacenamiento (imágenes y PDFs de negociaciones)
 
@@ -126,10 +135,29 @@ chocar con nada preexistente. Sin `empresa_id` (un solo tenant). Migraciones ver
   agente, sin terceros. La data se carga 100% a mano (tokens de la cuenta Pro para
   generar/estructurar), dirigida desde Claude Code / Claude chat.
 
+## Pruebas y lecciones aprendidas
+
+- **Pruebas en el repo (`tests/`)**: `node tests/test_parser.js` (parser de importación) y
+  `python3 tests/test_guard.py` (hook de protección). Correrlas antes de tocar el parser o el hook.
+- **El sandbox de Claude Code web bloquea CDNs** (jsDelivr/cdnjs): no se puede probar contra Supabase real ni
+  cargar `supabase-js`. Método usado: Playwright con `page.route('**/supabase-js@2')` devolviendo un
+  **stub funcional** de Supabase (insert/upsert/únicos/Storage en memoria). Ojo: eso valida la lógica de
+  la app, **no** RLS ni el Supabase real — probar con login real antes de dar algo por definitivo.
+- **Re-pintar el detalle**: acciones desde un modal → `await render(); detalle(id)` (lista Y modal).
+- **`confirmar()` reemplaza el modal abierto**: leer los valores del formulario ANTES de llamarlo.
+- **Importación idempotente**: hash por mensaje (`fecha|emisor|tipo|contenido`), UNIQUE por hilo,
+  `upsert ... ignoreDuplicates`. Nunca insertar mensajes importados sin hash.
+- **Falsos positivos del guard** (`guard-ops.py`): detecta por texto; un `sed`, un mensaje de commit o un
+  nombre de archivo que mencione el nombre del repo protegido se bloquea. Usar Write/Edit o reformular; no
+  esquivar el hook. Si el guard se bloquea a sí mismo, escribir el archivo nuevo con Write.
+- Cache-busting actual: scripts y CSS en `?v=3`. Al agregar markup, avisar hard-refresh (Ctrl+Shift+R).
+
 ## Deploy
 
 - Rama principal: **`main`**. Trabajar en ramas de feature y llevar a `main` cuando el
-  usuario lo autorice (`git push origin <rama>:main`, fast-forward).
+  usuario lo autorice (`git push origin <rama>:main`, fast-forward). Verificar antes con
+  `git merge-base --is-ancestor origin/main HEAD`. Primer traslado a `main`: 2026-09-29 (Panel, Clientes,
+  Cotizaciones, Máquinas, Negociaciones).
 - Hosting: **Static Site (Render)** con auto-deploy desde `main`. **Sitio ESTÁTICO SIN
   build**: `index.html` en la raíz, Publish Directory `.`, sin `dist`.
 - Cache-busting `?v=` en cada `<script>` (ver convenciones).

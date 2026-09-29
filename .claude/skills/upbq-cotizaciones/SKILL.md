@@ -35,3 +35,15 @@ Registrar y dar seguimiento a las cotizaciones de la sede, y no perder ningún c
 
 - Un cliente con cotización `en_seguimiento` sin movimiento → sugerencia de recontacto en
   el Panel y en la Bitácora de Negociaciones.
+
+## Implementación (hecha · `js/cotizaciones.js`)
+
+- Lista con chips por estado; alta con estado inicial `borrador` o `enviada`. Detalle con acciones:
+  marcar enviada / en seguimiento / **proforma solicitada** (guarda fecha) / cerrar ganada o perdida.
+- **Auto-recordatorio:** al crear como `enviada` o pasar a `enviada` se inserta un recordatorio `auto=true`
+  a `UPBQ_SEGUIMIENTO_DIAS` (3) días. Al cerrar, los recordatorios pendientes de esa cotización pasan a
+  `hecho` (ganada) o `negocio_cae` (perdida).
+- **Motivo de cierre obligatorio** en UI y en BD (`CHECK upbq_cot_motivo_cierre`).
+- Cada acción re-pinta lista **y** detalle. Desde el Panel, "sin respuesta" abre el detalle
+  (`cot.ver-desde-panel`). Umbral "sin respuesta" = `UPBQ_SIN_RESPUESTA_DIAS` (5).
+- Los mensajes de Negociaciones pueden vincularse a una cotización (badge en el chat).

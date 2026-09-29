@@ -55,3 +55,18 @@ sensible o una transición que deba validarse server-side). Hasta entonces, no.
 2. Aplicarla (MCP Supabase o CLI) y verificar con `list_tables`.
 3. Sincronizar la constante JS de estados si aplica.
 4. Actualizar `upbq-modelo` implícito en `CLAUDE.md` y el pendiente en `upbq-pendientes`.
+
+## Estado y procedimiento real (hecho)
+
+- Migraciones en `sql/000`–`004` (ver tabla en `CLAUDE.md`). Siguiente número libre: **005**. Se escribe el
+  archivo en `sql/` y se aplica con el MCP de Supabase (`apply_migration`, mismo contenido) sobre
+  `tkekmpxwefjlkwegamfz`; se verifica con SQL de solo lectura (RLS, políticas, buckets).
+- **Vistas:** crear con `with (security_invoker = true)` para que respeten la RLS; `revoke ... from anon`
+  y `grant select ... to authenticated`.
+- **Bucket:** se crea por SQL (`insert into storage.buckets ... public=false, file_size_limit,
+  allowed_mime_types`) + una política sobre `storage.objects` filtrando por `bucket_id`. Existente:
+  `upbq-negociaciones`. Ruta de objeto: `{negociacion_id}/{uuid}.{ext}`.
+- **Al borrar un objeto de Storage que dependa de una función:** las políticas del bucket viejo dependían de
+  `get_empresa_id_actual()`; se borraron por nombre (sin CASCADE) antes de soltar las funciones.
+- El MCP de Supabase se desconecta a ratos: si falta, reintentar con `ToolSearch` (no asumir error de SQL).
+- Deuda conocida: bucket `entregas-privado` (sin políticas) y 2 usuarios de `auth.users` reciclables.

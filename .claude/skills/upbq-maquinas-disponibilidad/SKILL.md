@@ -53,3 +53,8 @@ cuándo — y llevar bien las cuentas de días trabajados.
 - Un equipo no admite dos alquileres activos solapados (validación en cliente). Alquiler activo con fin
   pasado se muestra en rojo "vencido sin finalizar" y sale en el Panel.
 - Las novedades deben caer dentro del rango del alquiler; descuentan solo días hábiles.
+
+- Añadir festivos de un año nuevo: `insert into upbq_festivos` con una migración (`sql/00X`). Regla usada:
+  fijos (1-ene, 1-may, 20-jul, 7-ago, 8-dic, 25-dic); trasladados al lunes siguiente (Emiliani: 6-ene, 19-mar,
+  29-jun, 15-ago, 12-oct, 1-nov, 11-nov); Semana Santa (Pascua −3 y −2) y Pascua +43 (Ascensión),
+  +64 (Corpus Christi), +71 (Sagrado Corazón).

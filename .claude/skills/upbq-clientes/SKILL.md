@@ -33,3 +33,11 @@ quién cobrar, a quién contactar y con quién hay negocio.
   "clientes en mora").
 - Toda interpolación de texto libre con `esc()`.
 - "Hoy" con el helper `America/Bogota` para cualquier cálculo de antigüedad/mora.
+
+## Implementación (hecha · `js/clientes.js`)
+
+- Chips por estado con conteo; `en_mora` y `bloqueado` con borde rojo. Alta/edición en modal.
+- Ficha: datos, notas, cotizaciones y recordatorios del cliente + botón **"Ver negociación"**
+  (`cli.hilo` → `UPBQ.irA('neg')` + abre el hilo).
+- No se puede borrar un cliente con cotizaciones/alquileres/hilo (FK `on delete restrict`): cambiarle el
+  estado a `inactivo`.

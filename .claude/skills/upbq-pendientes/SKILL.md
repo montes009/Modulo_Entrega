@@ -12,15 +12,16 @@ description: >
 
 ## Estado global (actualizar en cada sesión)
 
-- **Fase actual:** CONSTRUCCIÓN. Hecho: BD limpia + `sql/001` base, `002` festivos, `003` negociaciones
-  (+ bucket privado `upbq-negociaciones`), `004` vista resumen; login/nav, Panel, Clientes, Cotizaciones,
-  Máquinas (Gantt + `UPBQ.Habiles`) y **Negociaciones** (chat, filtro por mes, import WhatsApp/JSON) (`?v=3`).
-- **Ojo:** todo probado solo con Supabase simulado (el sandbox bloquea el CDN): falta probar login real y
-  datos reales. Bucket viejo `entregas-privado` sigue ahí (sin políticas); 2 usuarios en `auth.users` a reciclar.
-- **Hard-refresh (Ctrl+Shift+R)** la primera vez: cambió el markup (nuevas pestañas/scripts).
-- **Siguiente paso:** Caja menor (espera el formato del usuario) y una pasada con datos reales.
-- **Festivos:** cargados hasta 2028; añadir 2029 con INSERT en `upbq_festivos`.
-- **Import .zip de WhatsApp:** carga JSZip desde cdnjs bajo demanda (única dependencia externa del import).
+- **Fase actual:** CONSTRUIDO Y EN `main` (2026-09-29): Panel, Clientes, Cotizaciones, Máquinas (Gantt +
+  días hábiles + festivos) y Negociaciones (chat + import WhatsApp/JSON). Migraciones `sql/000`–`004`
+  aplicadas en Supabase `Modulo_Entrega`. Guard `guard-ops.py` activo. Cache `?v=3`.
+- **Riesgo #1:** TODO se probó con un Supabase simulado (el sandbox bloquea CDNs). **Falta la primera prueba
+  con login real y datos reales** (RLS, Storage, subida de adjuntos, import de un chat verdadero).
+- **Antes de la prueba real:** crear/resetear la contraseña de uno de los 2 usuarios de `auth.users`;
+  hard-refresh (Ctrl+Shift+R) tras el primer despliegue en Render.
+- **Siguiente paso:** (1) prueba real y corrección de lo que salga; (2) **Caja menor** en cuanto el usuario
+  entregue el formato — no inventar el flujo.
+- **Deuda menor:** añadir festivos 2029 antes de fin de 2028; bucket viejo `entregas-privado` sin usar.
 
 ## Decisiones ya cerradas
 
@@ -36,9 +37,13 @@ description: >
 ## Pendientes abiertos
 
 1. Recibir de parte del usuario el **formato de Caja menor** para diseñar ese módulo.
-2. ~~Andamiaje~~ HECHO (Panel, Clientes, Cotizaciones). Falta probar con login real.
-3. ~~Festivos de Colombia~~ HECHO (`upbq_festivos` + `js/habiles.js`). Añadir 2029+ a futuro.
-4. ~~Bucket privado de Storage~~ HECHO (`upbq-negociaciones`, 10 MB, imágenes y PDF).
+2. **Primera prueba con login y datos reales** (ver Estado global) y corregir hallazgos.
+3. Añadir festivos 2029+ (`upbq_festivos`) antes de que termine 2028.
+4. (Opcional) Decidir qué hacer con el bucket viejo `entregas-privado`.
+
+### Cerrados
+- Andamiaje (login, nav, Panel, Clientes, Cotizaciones) · Máquinas/Gantt · Festivos CO + `UPBQ.Habiles` ·
+  Negociaciones + bucket privado `upbq-negociaciones` · regla dura de protección (guard) · traslado a `main`.
 
 ## Riesgos conocidos
 
