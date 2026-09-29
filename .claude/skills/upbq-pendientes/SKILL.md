@@ -12,10 +12,13 @@ description: >
 
 ## Estado global (actualizar en cada sesión)
 
-- **Fase actual:** DISEÑO. Solo existe el prompt maestro (`PROMPT_UP_Barranquilla.pdf`),
-  la memoria (`CLAUDE.md`) y estas skills. **Aún no se ha construido código.**
-- **Siguiente paso acordado:** al recibir "construye", arrancar por el andamiaje
-  (`index.html` + login Supabase + navegación entre módulos + migración `upbq_*`).
+- **Fase actual:** CONSTRUCCIÓN (paso 1). Hecho: limpieza de la BD vieja (`sql/000`), migración
+  `sql/001_upbq_base.sql` aplicada en Supabase `Modulo_Entrega` (`tkekmpxwefjlkwegamfz`), y
+  andamiaje `index.html` + login + nav + Panel + Clientes + Cotizaciones (`?v=1`).
+- **Ojo:** el bucket viejo `entregas-privado` sigue ahí (sin políticas). Los 2 usuarios de
+  `auth.users` se reciclan. Probado solo con stub de Supabase: falta probar login real.
+- **Siguiente paso:** Máquinas/Gantt (+ festivos CO y helper de días hábiles), luego
+  Negociaciones (+ bucket privado nuevo) y Caja menor (espera formato).
 
 ## Decisiones ya cerradas
 
@@ -30,7 +33,7 @@ description: >
 ## Pendientes abiertos
 
 1. Recibir de parte del usuario el **formato de Caja menor** para diseñar ese módulo.
-2. Construir el andamiaje (index + login + nav + migración).
+2. ~~Andamiaje~~ HECHO (Panel, Clientes, Cotizaciones). Falta probar con login real.
 3. Definir festivos de Colombia (tabla o helper) para el conteo de días hábiles.
 4. Crear bucket privado de Storage para imágenes/PDFs de negociaciones.
 

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UP Barranquilla · Coordinación</title>
+<link rel="stylesheet" href="css/app.css?v=1">
+</head>
+<body>
+<div id="login">
+  <div class="card">
+    <h1>UP Barranquilla</h1>
+    <p>Panel de Coordinación de Sede</p>
+    <label>Correo<input id="lg-email" type="email" autocomplete="username"></label>
+    <label>Contraseña<input id="lg-pass" type="password" autocomplete="current-password"></label>
+    <button class="btn primary" data-action="login">Entrar</button>
+  </div>
+</div>
+<div id="app" hidden>
+  <nav id="nav"></nav>
+  <main id="vista"></main>
+</div>
+<div id="modal" hidden><div class="modal-box"><div class="modal-body"></div></div></div>
+<div id="toasts"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js?v=1"></script>
+<script src="js/constantes.js?v=1"></script>
+<script src="js/util.js?v=1"></script>
+<script src="js/clientes.js?v=1"></script>
+<script src="js/cotizaciones.js?v=1"></script>
+<script src="js/panel.js?v=1"></script>
+<script src="js/app.js?v=1"></script>
+</body>
+</html>
