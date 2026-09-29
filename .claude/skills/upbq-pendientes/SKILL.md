@@ -13,7 +13,7 @@ description: >
 ## Estado global (actualizar en cada sesión)
 
 - **Fase actual:** CONSTRUIDO Y EN `main` (2026-09-29): Panel, Clientes, Cotizaciones, Máquinas (Gantt +
-  días hábiles + festivos) y Negociaciones (chat + import WhatsApp/JSON). Migraciones `sql/000`–`004`
+  días hábiles + festivos) y Negociaciones (chat + import WhatsApp/JSON). Migraciones `sql/000`–`005`
   aplicadas en Supabase `Modulo_Entrega`. Guard `guard-ops.py` activo. Cache `?v=3`.
 - **Riesgo #1:** TODO se probó con un Supabase simulado (el sandbox bloquea CDNs). **Falta la primera prueba
   con login real y datos reales** (RLS, Storage, subida de adjuntos, import de un chat verdadero).
@@ -22,7 +22,7 @@ description: >
   Hard-refresh (Ctrl+Shift+R) tras cada despliegue con markup nuevo.
 - **Siguiente paso:** (1) prueba real y corrección de lo que salga; (2) **Caja menor** en cuanto el usuario
   entregue el formato — no inventar el flujo.
-- **Estado de `main`:** `sql/005` y estos docs están en la rama `ccr-…`; llevar a `main` cuando el usuario lo autorice.
+- **Estado de `main`:** al día con todo, incluida `sql/005` (RLS solo coordinador), desde 2026-09-29.
 - **Deuda menor:** añadir festivos 2029 antes de fin de 2028; bucket viejo `entregas-privado` sin usar.
 
 ## Decisiones ya cerradas
