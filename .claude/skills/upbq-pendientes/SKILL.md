@@ -23,6 +23,9 @@ description: >
 - **Siguiente paso:** (1) prueba real y corrección de lo que salga; (2) **Caja menor** en cuanto el usuario
   entregue el formato — no inventar el flujo.
 - **Estado de `main`:** al día con todo, incluida `sql/005` (RLS solo coordinador), desde 2026-09-29.
+- **DATOS DEMO CARGADOS (2026-09-29):** 6 clientes, 5 máquinas, 7 cotizaciones, 5 alquileres, 3 hilos (21 mensajes)…
+  todo marcado `DEMO` (`DEMO · …`, `DEMO-…`, `[DEMO] …`). **Borrar antes del uso real** ejecutando
+  `sql/demo/demo_limpiar.sql` (solo toca filas DEMO). Re-sembrar: `sql/demo/demo_seed.sql` (fechas relativas a hoy).
 - **Deuda menor:** añadir festivos 2029 antes de fin de 2028; bucket viejo `entregas-privado` sin usar.
 
 ## Decisiones ya cerradas

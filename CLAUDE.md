@@ -141,6 +141,10 @@ y 2 usuarios en `auth.users` (se reciclan para el login).
 
 ## Pruebas y lecciones aprendidas
 
+- **Datos de demostración:** `sql/demo/demo_seed.sql` (ficticios, marcados `DEMO`, fechas relativas a hoy) y
+  `sql/demo/demo_limpiar.sql` (los borra sin tocar datos reales). No son migraciones. Nunca sembrar datos de
+  demo en la BD de ALCON OPS: el guard lo bloquea y la regla dura lo prohíbe.
+
 - **Pruebas en el repo (`tests/`)**: `node tests/test_parser.js` (parser de importación) y
   `python3 tests/test_guard.py` (hook de protección) y `node tests/smoke_login.js` (login; requiere Playwright). Correrlas antes de tocar el parser o el hook.
 - **El sandbox de Claude Code web bloquea CDNs** (jsDelivr/cdnjs): no se puede probar contra Supabase real ni
