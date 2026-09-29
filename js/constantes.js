@@ -9,4 +9,5 @@
   };
   global.UPBQ_SEGUIMIENTO_DIAS = 3; // auto-recordatorio tras enviar cotización
   global.UPBQ_SIN_RESPUESTA_DIAS = 5; // umbral del widget "sin respuesta"
+  global.UPBQ_NEG_SIN_MOVIMIENTO_DIAS = 7; // hilo con cotización abierta sin mensajes en N días → recontacto
 })(window);

@@ -4,14 +4,19 @@
 
   async function render() {
     const hoy = U.today();
-    const [rec, cot, mora, pen, alq] = await Promise.all([
+    const [rec, cot, mora, pen, alq, res] = await Promise.all([
       U.sb.from('upbq_recordatorios').select('*, upbq_clientes(nombre)').eq('estado', 'pendiente').lte('fecha', hoy).order('fecha'),
       U.sb.from('upbq_cotizaciones').select('*, upbq_clientes(nombre)').in('estado', ['enviada', 'en_seguimiento']).order('fecha'),
       U.sb.from('upbq_clientes').select('id,nombre,telefono').eq('estado', 'en_mora').order('nombre'),
       U.sb.from('upbq_pendientes').select('*').eq('hecho', false).order('fecha', { nullsFirst: false }),
-      U.sb.from('upbq_alquileres').select('*, upbq_clientes(nombre), upbq_maquinas(codigo,tipo)').eq('estado', 'activo').order('fecha_fin')
+      U.sb.from('upbq_alquileres').select('*, upbq_clientes(nombre), upbq_maquinas(codigo,tipo)').eq('estado', 'activo').order('fecha_fin'),
+      U.sb.from('upbq_negociaciones_resumen').select('*')
     ]);
-    for (const r of [rec, cot, mora, pen, alq]) if (r.error) throw r.error;
+    for (const r of [rec, cot, mora, pen, alq, res]) if (r.error) throw r.error;
+    // Hilos con cotización abierta y sin mensajes hace N días → sugerencia de recontacto
+    const abiertos = new Set(cot.data.map(q => q.cliente_id));
+    const quietos = res.data.filter(h => h.mensajes && abiertos.has(h.cliente_id) && U.diffDays(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date(h.ultima)), hoy) >= global.UPBQ_NEG_SIN_MOVIMIENTO_DIAS);
+    const nomCli = id => { const q = cot.data.find(x => x.cliente_id === id); return q && q.upbq_clientes ? q.upbq_clientes.nombre : '—'; };
     const sem = U.addDays(hoy, 7);
     const arrancan = alq.data.filter(a => a.fecha_inicio >= hoy && a.fecha_inicio <= sem);
     const terminan = alq.data.filter(a => a.fecha_fin >= hoy && a.fecha_fin <= sem && a.fecha_inicio <= hoy);
@@ -31,6 +36,7 @@
       w('Alquileres que arrancan (7 días)', arrancan.length, arrancan.length ? arrancan.map(a => filaAlq(a, 'Inicia ' + U.fmtFecha(a.fecha_inicio))).join('') : vacio('Ninguno')) +
       w('Máquinas que se liberan (7 días)', terminan.length, terminan.length ? terminan.map(a => filaAlq(a, 'Termina ' + U.fmtFecha(a.fecha_fin) + ' · ' + U.diffDays(hoy, a.fecha_fin) + ' d')).join('') : vacio('Ninguna')) +
       (vencidos.length ? w('Alquileres vencidos sin finalizar', vencidos.length, vencidos.map(a => filaAlq(a, 'Terminó ' + U.fmtFecha(a.fecha_fin))).join('')) : '') +
+      w('Negociaciones sin movimiento', quietos.length, quietos.length ? quietos.map(h => '<div class="item" data-action="pan.ir-neg" data-id="' + esc(h.cliente_id) + '"><div><b>' + esc(nomCli(h.cliente_id)) + '</b><small>Último mensaje ' + U.fmtFecha(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date(h.ultima))) + ' · cotización abierta</small></div></div>').join('') : vacio('Todas al día')) +
       w('Clientes en mora', mora.data.length, mora.data.length ? mora.data.map(c => '<div class="item est-en_mora"><b>' + esc(c.nombre) + '</b><small>' + esc(c.telefono || '') + '</small></div>').join('') : vacio('Ninguno')) +
       w('Pendientes', pen.data.length,
         '<div class="row"><input id="pen-texto" placeholder="Nueva nota rápida…"><button class="btn primary" data-action="pan.pen-nuevo">Añadir</button></div>' +
@@ -45,6 +51,7 @@
         U.toast('Recordatorio actualizado');
         return render();
       }
+      case 'ir-neg': await U.irA('neg'); return U.modulos.neg.handle('abrir', id);
       case 'ir-maq': return document.querySelector('[data-tab="maq"]').click();
       case 'pen-nuevo': {
         const t = document.getElementById('pen-texto').value.trim();

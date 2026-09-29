@@ -57,15 +57,16 @@
       '<p>' + esc(c.telefono || '') + ' ' + esc(c.email || '') + '</p>' + (c.notas ? '<p class="nota">' + esc(c.notas) + '</p>' : '') +
       '<h4>Cotizaciones</h4>' + (cot.data.length ? cot.data.map(q => '<div class="mini">' + U.fmtFecha(q.fecha) + ' · ' + esc(q.equipo || '—') + ' · ' + U.fmtMoney(q.valor) + ' · ' + esc(CE[q.estado]) + '</div>').join('') : '<p class="vacio">Ninguna</p>') +
       '<h4>Recordatorios</h4>' + (rec.data.length ? rec.data.map(r => '<div class="mini">' + U.fmtFecha(r.fecha) + ' · ' + esc(r.texto) + ' · ' + esc(RE[r.estado]) + '</div>').join('') : '<p class="vacio">Ninguno</p>') +
-      '<div class="row end"><button class="btn" data-action="modal.cerrar">Cerrar</button><button class="btn" data-action="cli.editar" data-id="' + esc(id) + '">Editar</button></div>');
+      '<div class="row end"><button class="btn" data-action="modal.cerrar">Cerrar</button><button class="btn" data-action="cli.hilo" data-id="' + esc(id) + '">Ver negociación</button><button class="btn" data-action="cli.editar" data-id="' + esc(id) + '">Editar</button></div>');
   }
-  function handle(a, id) {
+  async function handle(a, id) {
     switch (a) {
       case 'filtro': filtro = id; return render();
       case 'nuevo': return form();
       case 'editar': return form(lista.find(x => x.id === id));
       case 'guardar': return guardar(id);
       case 'ver': return ver(id);
+      case 'hilo': U.closeModal(); await U.irA('neg'); return U.modulos.neg.handle('abrir', id);
     }
   }
   global.UPBQ.modulos.cli = { render, handle, get lista() { return lista; } };

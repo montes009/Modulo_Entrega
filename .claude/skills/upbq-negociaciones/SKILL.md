@@ -52,3 +52,16 @@ mensajería en tiempo real.**
 - Un hilo con negociación activa este mes sin movimiento reciente → sugerencia de recontacto
   en el Panel.
 - Toda interpolación de texto libre con `esc()`.
+
+## Implementación (hecha)
+
+- Tablas `upbq_negociaciones` (UNIQUE cliente_id) y `upbq_negociacion_mensajes`; vista `upbq_negociaciones_resumen`
+  (n.º de mensajes y último mensaje por hilo, `security_invoker`). Bucket privado `upbq-negociaciones`.
+- `js/neg-parser.js`: `parseWhatsApp` (Android/iOS, 12 h y 24 h, dd/mm y mm/dd, multilínea, adjuntos
+  `<adjunto: …>` y `… (archivo adjunto)`, omitidos, líneas de sistema) y `parseJSON`. Fechas = hora de Bogotá (-05:00).
+- `js/negociaciones.js`: lista de hilos → chat con burbujas por día, chips por mes (por defecto el más reciente),
+  imágenes con lightbox y PDF ver/descargar (URL firmada de 10 min), formulario manual y importador con vista previa.
+- **Idempotencia:** cada mensaje lleva `hash` único por hilo → reimportar el mismo export no duplica. Un adjunto
+  que falla al subir deja un texto placeholder con hash distinto y se reintenta en el siguiente import.
+- Al importar WhatsApp el usuario marca qué remitentes son "Nosotros"; los demás son "Cliente".
+- Panel: widget "Negociaciones sin movimiento" (cotización abierta + último mensaje ≥ `UPBQ_NEG_SIN_MOVIMIENTO_DIAS`).

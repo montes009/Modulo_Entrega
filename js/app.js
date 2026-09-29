@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
   const U = global.UPBQ;
-  const TABS = { pan: 'Panel', cli: 'Clientes', cot: 'Cotizaciones', maq: 'Máquinas' };
+  const TABS = { pan: 'Panel', cli: 'Clientes', cot: 'Cotizaciones', maq: 'Máquinas', neg: 'Negociaciones' };
   let tab = 'pan';
 
   async function irA(t) {
@@ -9,6 +9,7 @@
     document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
     await U.seguro(() => U.modulos[t].render());
   }
+  U.irA = irA; // otros módulos navegan con U.irA('cli' | 'neg' | …)
   function mostrar(logueado) {
     document.getElementById('login').hidden = logueado;
     document.getElementById('app').hidden = !logueado;
