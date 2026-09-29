@@ -22,6 +22,7 @@ description: >
 
 ## Decisiones ya cerradas
 
+- **ALCON OPS intocable** (repo y BD): solo lectura. Hook `.claude/hooks/guard-ops.py` activo.
 - Base de datos: **misma Supabase del repo**, tablas con prefijo `upbq_`.
 - Máquinas: vista principal **Gantt** (línea de tiempo).
 - Negociaciones: **un hilo por cliente**; carga **manual (formulario) + import** (export

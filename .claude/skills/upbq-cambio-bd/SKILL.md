@@ -11,6 +11,9 @@ description: >
 
 # UP Barranquilla — Cambios de base de datos
 
+> **Solo `Modulo_Entrega` (`tkekmpxwefjlkwegamfz`).** Nunca escribir en OPS-ALCON-ADMI
+> (`oguxdohmutqgacahcwop`): el hook `.claude/hooks/guard-ops.py` lo bloquea; ver `CLAUDE.md`.
+
 ## Principio: seguridad MÍNIMA por ahora
 
 Este proyecto es de un solo usuario en fase de prueba. **No sobre-diseñar.** Escritura

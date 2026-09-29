@@ -11,6 +11,21 @@ Stack: **JS vanilla (sin build) + Supabase (Auth + Postgres + Storage)**.
 > roles, sin RLS avanzada, sin cortes de facturación. Solo login por ahora.
 > El prompt maestro de diseño vive en `PROMPT_UP_Barranquilla.pdf` (raíz).
 
+## Regla dura: ALCON OPS es INTOCABLE desde este repo
+
+**Prohibido escribir o modificar el repo de ALCON OPS (`OPS-ALCON-ADMI`) y su base de datos**
+(Supabase `oguxdohmutqgacahcwop`). Solo se permite **leer** para consultar cómo se hizo algo.
+- Este repo trabaja únicamente sobre el proyecto Supabase **`Modulo_Entrega`** (`tkekmpxwefjlkwegamfz`).
+- Se hace cumplir con el hook `.claude/hooks/guard-ops.py` (PreToolUse, registrado en
+  `.claude/settings.json`): bloquea migraciones/SQL/edge functions en cualquier proyecto que no
+  sea `Modulo_Entrega`, escrituras GitHub sobre repos "alcon", Write/Edit en rutas "alcon" fuera
+  de este proyecto, y comandos Bash de escritura (`git push`, `rm`, `curl -X POST`…) con "alcon".
+- No desactivar ni editar el hook para saltarse la regla. Si alguna vez hay que tocar ALCON, lo
+  autoriza el usuario explícitamente y se hace en una sesión propia de ese repo.
+- Límites conocidos: detecta por nombre/ID (`alcon`, `oguxdohmutqgacahcwop`), así que un repo
+  renombrado sin "alcon" no se detectaría; y como es texto, puede dar falsos positivos (p. ej. un
+  `sed` que mencione "alcon"): ante un bloqueo, usar Write/Edit en vez de esquivarlo. Ante duda, preguntar.
+
 ## Qué es el sistema
 
 Herramienta de un solo usuario (el coordinador) para administrar la sede: cotizaciones,
