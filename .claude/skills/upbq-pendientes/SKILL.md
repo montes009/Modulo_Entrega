@@ -22,7 +22,7 @@ description: >
   Hard-refresh (Ctrl+Shift+R) tras cada despliegue con markup nuevo.
 - **Siguiente paso:** (1) prueba real y corrección de lo que salga; (2) **Caja menor** en cuanto el usuario
   entregue el formato — no inventar el flujo.
-- **Enfoque agenda aplicado el 2026-09-29** (ver CLAUDE.md "Enfoque del producto"); la rama tiene el cambio, falta llevarlo a `main` cuando el usuario lo autorice.
+- **Enfoque agenda aplicado el 2026-09-29** (ver CLAUDE.md "Enfoque del producto"); ya está en `main` (2566379).
 - **Estado de `main`:** al día con todo, incluida `sql/005` (RLS solo coordinador), desde 2026-09-29.
 - **Datos DEMO: CARGADOS de nuevo (2026-09-29, ampliados):** 6 clientes, 7 máquinas, 7 cotizaciones, 6 alquileres, 3 novedades,
   3 hilos (21 mensajes)… todo marcado `DEMO`. **Borrar antes del uso real:** `sql/demo/demo_limpiar.sql`. Re-sembrar: `sql/demo/demo_seed.sql`.
