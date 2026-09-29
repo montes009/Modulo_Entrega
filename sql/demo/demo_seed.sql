@@ -5,7 +5,7 @@ do $$
 declare
   hoy date := (now() at time zone 'America/Bogota')::date;
   c_andina uuid; c_caribe uuid; c_puertos uuid; c_vias uuid; c_costa uuid; c_sol uuid;
-  m_gr uuid; m_re uuid; m_mn uuid; m_vb uuid; m_pl uuid;
+  m_gr uuid; m_re uuid; m_mn uuid; m_vb uuid; m_pl uuid; m_ex uuid; m_cp uuid; a_ex uuid;
   q_grua50 uuid; q_retro uuid; q_mini uuid; q_plat uuid; q_vibro uuid; q_borrador uuid; q_grua80 uuid;
   a_gr uuid;
   h_andina uuid; h_puertos uuid; h_vias uuid;
@@ -34,6 +34,8 @@ begin
   insert into public.upbq_maquinas (codigo, tipo, descripcion) values ('DEMO-MN-03', 'Minicargador', 'Bobcat con implementos') returning id into m_mn;
   insert into public.upbq_maquinas (codigo, tipo, descripcion) values ('DEMO-VB-04', 'Vibrocompactador', 'Rodillo liso 10 t') returning id into m_vb;
   insert into public.upbq_maquinas (codigo, tipo, descripcion) values ('DEMO-PL-05', 'Plataforma elevadora', 'Tijera eléctrica 12 m') returning id into m_pl;
+  insert into public.upbq_maquinas (codigo, tipo, descripcion) values ('DEMO-EX-06', 'Excavadora 20 t', 'Oruga, cuchara 1.2 m³') returning id into m_ex;
+  insert into public.upbq_maquinas (codigo, tipo, descripcion) values ('DEMO-CP-07', 'Compresor', 'Compresor diésel 185 CFM') returning id into m_cp;
 
   -- Cotizaciones ------------------------------------------------------------
   insert into public.upbq_cotizaciones (cliente_id, equipo, valor, fecha, estado, proforma_solicitada, proforma_fecha, notas)
@@ -64,6 +66,13 @@ begin
     values (m_mn, c_puertos, q_mini, hoy + 3, hoy + 12, 'activo');
   insert into public.upbq_alquileres (maquina_id, cliente_id, cotizacion_id, fecha_inicio, fecha_fin, estado)
     values (m_vb, c_andina, q_vibro, hoy - 30, hoy - 15, 'finalizado');
+
+  -- Alquiler largo que TRABAJA sábados (excluir_sabados = false) y con dos novedades: prueba el mapa de días con ventana
+  insert into public.upbq_alquileres (maquina_id, cliente_id, fecha_inicio, fecha_fin, estado, excluir_sabados, notas)
+    values (m_ex, c_puertos, hoy - 30, hoy + 25, 'activo', false, 'Movimiento de tierra muelle 2. Se trabaja también los sábados.') returning id into a_ex;
+  insert into public.upbq_alquiler_novedades (alquiler_id, fecha_desde, fecha_hasta, motivo, nota) values
+    (a_ex, hoy - 12, hoy - 11, 'Paro', 'Bloqueo de la vía de acceso.'),
+    (a_ex, hoy - 3, hoy - 3, 'Lluvia', null);
 
   -- Recordatorios y pendientes -------------------------------------------------
   insert into public.upbq_recordatorios (cliente_id, cotizacion_id, texto, fecha, estado, auto) values
