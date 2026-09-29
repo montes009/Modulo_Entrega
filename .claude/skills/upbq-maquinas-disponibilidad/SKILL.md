@@ -42,3 +42,14 @@ cuándo — y llevar bien las cuentas de días trabajados.
 
 - Dejar notas en un alquiler re-pinta el detalle abierto, no solo la lista.
 - Toda interpolación con `esc()`.
+
+## Implementación (hecha)
+
+- Festivos en `upbq_festivos` (fecha, nombre; 2026-2028, Ley Emiliani + Semana Santa). Helper único:
+  `UPBQ.Habiles` (`js/habiles.js`): `contar(desde, hasta, novedades)` → `{habiles, descontados, netos}`,
+  `esHabil`, `esFestivo`, `cubre(hasta)`. No reinventar el conteo en otra pantalla.
+- Gantt en `js/maquinas.js`: ventana de 5 semanas, navegación ◀ Hoy ▶, sombreado de fines de semana/festivos.
+  El estado libre/alquilada se **deriva** de los alquileres activos (la columna `upbq_maquinas.estado` no se usa).
+- Un equipo no admite dos alquileres activos solapados (validación en cliente). Alquiler activo con fin
+  pasado se muestra en rojo "vencido sin finalizar" y sale en el Panel.
+- Las novedades deben caer dentro del rango del alquiler; descuentan solo días hábiles.

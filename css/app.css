@@ -29,3 +29,24 @@ label{display:block;margin-top:10px;font-size:13px;color:var(--mut)}
 .modal-box{background:var(--card);border-radius:12px;padding:18px;width:100%;max-width:520px;max-height:90vh;overflow:auto}
 #toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;z-index:20}
 .toast{background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px}.toast.err{background:var(--bad);color:#fff}
+/* Máquinas · Gantt */
+.gantt{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.gfila{display:flex;border-bottom:1px solid var(--line);min-width:max-content}
+.gnom{position:sticky;left:0;z-index:3;background:var(--card);width:150px;flex:none;padding:6px 8px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.gnom small{color:var(--mut)}.mini-b{padding:2px 8px;font-size:12px;margin-top:2px}
+.gtrack{position:relative;display:flex;width:calc(var(--dw)*var(--n));flex:none;min-height:56px}
+.gcab .gtrack{min-height:0}.gcab .gnom{padding:0}
+.gc,.gd{width:var(--dw);flex:none;border-right:1px solid var(--line)}
+.gd{text-align:center;font-size:11px;color:var(--mut);padding:2px 0;position:relative}.gd b{display:block;color:var(--fg);font-size:12px}
+.gd i{position:absolute;top:-1px;left:2px;font-style:normal;font-size:9px;color:var(--pri);text-transform:uppercase}
+.gd{padding-top:11px}
+.gc.fds,.gd.fds{background:color-mix(in srgb,var(--line) 60%,transparent)}
+.gc.fest,.gd.fest{background:color-mix(in srgb,var(--warn) 22%,transparent)}
+.gc.hoy,.gd.hoy{box-shadow:inset 2px 0 0 var(--pri),inset -2px 0 0 var(--pri)}
+.barra{position:absolute;top:10px;height:34px;border-radius:8px;padding:0 8px;font-size:12px;line-height:34px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#fff;cursor:pointer;z-index:2}
+.barra.act{background:var(--pri)}.barra.venc{background:var(--bad)}.barra.fin{background:var(--mut);opacity:.75}
+.leyenda{color:var(--mut);font-size:12px}.leyenda .barra{position:static;display:inline-block;height:18px;line-height:18px;padding:0 8px;cursor:default}
+.badge.alq{background:var(--pri);color:#fff}.badge.libre{background:var(--ok);color:#fff;font-size:11px}
+.kpis{display:flex;gap:10px;margin:8px 0}.kpis div{flex:1;background:var(--bg);border-radius:10px;padding:8px;text-align:center}.kpis b{display:block;font-size:22px}.kpis small{color:var(--mut)}
+.subform{background:var(--bg);border-radius:10px;padding:8px 10px;margin:8px 0}.subform .row label{flex:1}
+.mini{display:flex;justify-content:space-between;gap:8px;align-items:center}.rojo{color:var(--bad)}.aviso{background:color-mix(in srgb,var(--warn) 25%,transparent);padding:8px;border-radius:8px}

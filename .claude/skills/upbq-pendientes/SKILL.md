@@ -12,13 +12,14 @@ description: >
 
 ## Estado global (actualizar en cada sesión)
 
-- **Fase actual:** CONSTRUCCIÓN (paso 1). Hecho: limpieza de la BD vieja (`sql/000`), migración
-  `sql/001_upbq_base.sql` aplicada en Supabase `Modulo_Entrega` (`tkekmpxwefjlkwegamfz`), y
-  andamiaje `index.html` + login + nav + Panel + Clientes + Cotizaciones (`?v=1`).
-- **Ojo:** el bucket viejo `entregas-privado` sigue ahí (sin políticas). Los 2 usuarios de
-  `auth.users` se reciclan. Probado solo con stub de Supabase: falta probar login real.
-- **Siguiente paso:** Máquinas/Gantt (+ festivos CO y helper de días hábiles), luego
-  Negociaciones (+ bucket privado nuevo) y Caja menor (espera formato).
+- **Fase actual:** CONSTRUCCIÓN. Hecho: BD limpia + `sql/001` (base) + `sql/002` (festivos CO 2026-2028),
+  login/nav, Panel, Clientes, Cotizaciones y **Máquinas (Gantt) + helper `UPBQ.Habiles`** (`?v=2`).
+- **Ojo:** probado solo con Supabase simulado (el sandbox bloquea el CDN): falta probar login real y
+  datos reales. Bucket viejo `entregas-privado` sigue ahí (sin políticas); 2 usuarios en `auth.users` a reciclar.
+- **Hard-refresh (Ctrl+Shift+R)** la primera vez: se agregó la pestaña Máquinas al markup.
+- **Siguiente paso:** Negociaciones (+ bucket privado nuevo) y Caja menor (espera formato).
+- **Festivos:** cargados hasta 2028; añadir 2029 con INSERT en `upbq_festivos` antes de fin de 2028
+  (el Gantt avisa si el rango sale de los años cargados).
 
 ## Decisiones ya cerradas
 
@@ -35,7 +36,7 @@ description: >
 
 1. Recibir de parte del usuario el **formato de Caja menor** para diseñar ese módulo.
 2. ~~Andamiaje~~ HECHO (Panel, Clientes, Cotizaciones). Falta probar con login real.
-3. Definir festivos de Colombia (tabla o helper) para el conteo de días hábiles.
+3. ~~Festivos de Colombia~~ HECHO (`upbq_festivos` + `js/habiles.js`). Añadir 2029+ a futuro.
 4. Crear bucket privado de Storage para imágenes/PDFs de negociaciones.
 
 ## Riesgos conocidos

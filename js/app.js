@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
   const U = global.UPBQ;
-  const TABS = { pan: 'Panel', cli: 'Clientes', cot: 'Cotizaciones' };
+  const TABS = { pan: 'Panel', cli: 'Clientes', cot: 'Cotizaciones', maq: 'Máquinas' };
   let tab = 'pan';
 
   async function irA(t) {
